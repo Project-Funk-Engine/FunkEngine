@@ -39,7 +39,7 @@ public partial class StageProducer : Node
     private Node _curScene;
     private Node _preloadStage;
 
-    public static BattleConfig Config { get; private set; }
+    public static BattleConfig Config { get; set; }
 
     public static PlayerStats PlayerStats { get; private set; } //Hold here to persist between changes
 
@@ -130,38 +130,6 @@ public partial class StageProducer : Node
         TransitionStage(Map.GetRooms()[nextRoomIdx].Type, nextRoomIdx);
     }
 
-    private Task _loadTask;
-
-    /// <summary>
-    /// To be used from Cartographer. Preloads the scene during transition animation. This removes the occasionally noticeable load time for the scene change.
-    /// </summary>
-    /// <param name="nextRoomIdx">Index of the next room in the map to get the stage from.</param>
-    public void PreloadScene(int nextRoomIdx)
-    {
-        Stages nextStage = Map.GetRooms()[nextRoomIdx].Type;
-        Config = MakeBattleConfig(nextStage, nextRoomIdx);
-        switch (nextStage)
-        {
-            case Stages.Battle:
-            case Stages.Boss:
-                _loadTask = Task.Run(() =>
-                {
-                    _preloadStage = GD.Load<PackedScene>(BattleDirector.LoadPath)
-                        .Instantiate<Node>();
-                });
-                break;
-            case Stages.Chest:
-                _loadTask = Task.Run(() =>
-                {
-                    _preloadStage = GD.Load<PackedScene>(ChestScene.LoadPath).Instantiate<Node>();
-                });
-                break;
-            default:
-                GD.PushError($"Error Scene Transition is {nextStage}");
-                break;
-        }
-    }
-
     public void TransitionStage(Stages nextStage, int nextRoomIdx = -1)
     {
         GetTree().Root.RemoveChild(ContrastFilter);
@@ -174,7 +142,6 @@ public partial class StageProducer : Node
             case Stages.Battle: //Currently these are only ever entered from map. Be aware if we change
             case Stages.Boss: //this, scenes either need to be preloaded first, or a different setup is needed.
             case Stages.Chest:
-                _loadTask.Wait(); //Should always finish by the time it gets here, this guarantees it.
                 GetTree().GetCurrentScene().Free();
                 GetTree().Root.AddChild(_preloadStage);
                 GetTree().SetCurrentScene(_preloadStage);
@@ -210,33 +177,11 @@ public partial class StageProducer : Node
     }
     #endregion
 
-    private BattleConfig MakeBattleConfig(Stages nextRoom, int nextRoomIdx)
+    public static BattleConfig MakeBattleConfig()
     {
-        BattleConfig result = new BattleConfig
-        {
-            BattleRoom = Map.GetRooms()[nextRoomIdx],
-            RoomType = nextRoom,
-        };
-        RandomNumberGenerator stageRng = new RandomNumberGenerator();
-        stageRng.SetSeed(GlobalRng.Seed + (ulong)nextRoomIdx);
-        switch (nextRoom)
-        {
-            case Stages.Battle:
-                int songIdx = stageRng.RandiRange(1, 3);
-                result.CurSong = Scribe.SongDictionary[songIdx];
-                result.EnemyScenePath = Scribe.SongDictionary[songIdx].EnemyScenePath;
-                break;
-            case Stages.Boss:
-                result.EnemyScenePath = Scribe.SongDictionary[0].EnemyScenePath;
-                result.CurSong = Scribe.SongDictionary[0];
-                break;
-            case Stages.Chest:
-                break;
-            default:
-                GD.PushError($"Error making Battle Config for invalid room type: {nextRoom}");
-                break;
-        }
-        CurRoom = nextRoomIdx;
+        BattleConfig result = new BattleConfig { BattleRoom = null, RoomType = Stages.Battle };
+        result.EnemyScenePath = Scribe.SongDictionary[0].EnemyScenePath;
+        result.CurSong = Scribe.SongDictionary[0];
         return result;
     }
 

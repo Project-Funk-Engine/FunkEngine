@@ -129,7 +129,6 @@ public partial class Cartographer : Node2D
 
     private void EnterStage(int roomIdx, Button button)
     {
-        StageProducer.LiveInstance.PreloadScene(roomIdx);
         foreach (Button btn in _validButtons)
         {
             btn.Disabled = true;

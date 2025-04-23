@@ -57,6 +57,7 @@ public partial class BattleDirector : Node2D
 
     public override void _Ready()
     {
+        StageProducer.Config = StageProducer.MakeBattleConfig();
         SongData curSong = StageProducer.Config.CurSong.SongData;
         Audio.SetStream(GD.Load<AudioStream>(StageProducer.Config.CurSong.AudioLocation));
         if (curSong.SongLength <= 0)
@@ -81,7 +82,6 @@ public partial class BattleDirector : Node2D
         PuppetMarkers[0].AddChild(Player);
         Player.Defeated += CheckBattleStatus;
         EventizeRelics();
-        NPB.Setup(StageProducer.PlayerStats);
     }
 
     private void InitEnemies()
