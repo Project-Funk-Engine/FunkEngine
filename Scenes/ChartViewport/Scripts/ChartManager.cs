@@ -16,12 +16,12 @@ public partial class ChartManager : SubViewportContainer
 
     private Node _arrowGroup;
 
-    private readonly List<NoteArrow> _arrowPool = new();
-    private readonly List<HoldArrow> _holdPool = new();
+    private List<NoteArrow> _arrowPool = new();
+    private List<HoldArrow> _holdPool = new();
 
-    private readonly HoldArrow[] _currentHolds = new HoldArrow[4];
+    private HoldArrow[] _currentHolds = new HoldArrow[4];
 
-    private readonly List<NoteArrow>[] _queuedArrows = { new(), new(), new(), new() };
+    private List<NoteArrow>[] _queuedArrows = { new(), new(), new(), new() };
 
     private double _chartLength = 2500; //Play with this
     #region Initialization
@@ -33,12 +33,27 @@ public partial class ChartManager : SubViewportContainer
         IH.Connect(nameof(InputHandler.NoteReleased), new Callable(this, nameof(OnNoteReleased)));
     }
 
-    private bool _initialized;
-
     public void Initialize(SongData songData)
     {
-        if (_initialized)
-            return;
+        foreach (Node node in _arrowGroup.GetChildren())
+        {
+            node.QueueFree();
+        }
+        arrowTween?.Stop();
+
+        _arrowPool = new();
+        _holdPool = new();
+
+        _currentHolds = new HoldArrow[4];
+
+        _queuedArrows = new List<NoteArrow>[]
+        {
+            new List<NoteArrow>(),
+            new List<NoteArrow>(),
+            new List<NoteArrow>(),
+            new List<NoteArrow>(),
+        };
+
         TimeKeeper.LoopsPerSong = songData.NumLoops;
         TimeKeeper.SongLength = songData.SongLength;
 
@@ -54,15 +69,15 @@ public partial class ChartManager : SubViewportContainer
 
         TimeKeeper.ChartWidth = _chartLength;
         TimeKeeper.Bpm = songData.Bpm;
-
-        _initialized = true;
     }
+
+    private Tween arrowTween;
 
     public void BeginTweens()
     {
         //This could be good as a function to call on something, to have many things animated to the beat.
-        var tween = CreateTween();
-        tween
+        arrowTween = CreateTween();
+        arrowTween
             .TweenMethod(
                 Callable.From((Vector2 scale) => TweenArrows(scale)),
                 Vector2.One * .8f,
@@ -71,13 +86,13 @@ public partial class ChartManager : SubViewportContainer
             )
             .SetEase(Tween.EaseType.Out)
             .SetTrans(Tween.TransitionType.Elastic);
-        tween.TweenMethod(
+        arrowTween.TweenMethod(
             Callable.From((Vector2 scale) => TweenArrows(scale)),
             Vector2.One,
             Vector2.One * .8f,
             60f / TimeKeeper.Bpm / 2
         );
-        tween.SetLoops().Play();
+        arrowTween.SetLoops().Play();
     }
 
     private void TweenArrows(Vector2 scale)

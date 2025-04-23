@@ -11,20 +11,22 @@ public partial class Conductor : Node
     private ChartManager CM;
     private MidiMaestro MM;
 
-    private readonly List<ArrowData> _noteData = new List<ArrowData>();
+    private List<ArrowData> _noteData = new List<ArrowData>();
 
     private double _beatSpawnOffset;
 
-    private bool _initialized;
-
     #region Initialization
+
+    public override void _Ready()
+    {
+        CM.ArrowFromInput += ReceiveNoteInput;
+    }
+
     public void Initialize(SongData curSong)
     {
-        if (_initialized)
-            return;
+        _noteData = new List<ArrowData>();
 
         MM = new MidiMaestro(BattleDirector.Config.CurSong.MIDILocation);
-        CM.ArrowFromInput += ReceiveNoteInput;
 
         CM.Initialize(curSong);
 
@@ -33,8 +35,6 @@ public partial class Conductor : Node
             CM.Size.X / TimeKeeper.ChartWidth * TimeKeeper.BeatsPerLoop
         );
         AddInitialNotes();
-
-        _initialized = true;
     }
 
     private void AddInitialNotes()

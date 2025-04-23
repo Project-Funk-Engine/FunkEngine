@@ -23,11 +23,12 @@ public partial class BattleDirector : Node2D
     private AudioStreamPlayer Audio;
 
     [Export]
-    private Button _focusedButton; //Initial start button
+    private Button _reinitButton; //Initial start button
+
+    [Export]
+    private Button _playButton;
 
     private double _timingInterval = .1; //in beats, maybe make note/bpm dependent
-
-    private bool _initializedPlaying;
 
     public static SongTemplate Song = new SongTemplate(
         new SongData
@@ -54,23 +55,9 @@ public partial class BattleDirector : Node2D
     #endregion
 
     #region Initialization
-    private void SyncStartWithMix()
+    private void ResetEverything()
     {
-        var timer = GetTree().CreateTimer(AudioServer.GetTimeToNextMix());
-        timer.Timeout += BeginPlayback;
-        _focusedButton.QueueFree();
-        _focusedButton = null;
-    }
-
-    private void BeginPlayback()
-    {
-        CM.BeginTweens();
-        Audio.Play();
-        _initializedPlaying = true;
-    }
-
-    public override void _Ready()
-    {
+        Audio.Stop();
         Config = MakeBattleConfig();
         SongData curSong = Config.CurSong.SongData;
         Audio.SetStream(GD.Load<AudioStream>(Config.CurSong.AudioLocation));
@@ -81,10 +68,30 @@ public partial class BattleDirector : Node2D
 
         TimeKeeper.InitVals(curSong.Bpm);
         CD.Initialize(curSong);
+    }
+
+    private void BeginPlayback()
+    {
+        if (Audio.IsPlaying())
+            return;
+
+        var timer = GetTree().CreateTimer(AudioServer.GetTimeToNextMix());
+        timer.Timeout += () =>
+        {
+            CM.BeginTweens();
+            Audio.Play();
+        };
+    }
+
+    public override void _Ready()
+    {
         CD.NoteInputEvent += OnTimedInput;
 
-        _focusedButton.GrabFocus();
-        _focusedButton.Pressed += SyncStartWithMix;
+        ResetEverything();
+
+        _reinitButton.GrabFocus();
+        _reinitButton.Pressed += ResetEverything;
+        _playButton.Pressed += BeginPlayback;
     }
 
     public override void _Process(double delta)

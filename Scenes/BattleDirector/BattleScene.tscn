@@ -8,13 +8,14 @@
 [ext_resource type="Texture2D" uid="uid://dbjotl0v1ymia" path="res://SharedAssets/BattleFrame1.png" id="7_klvil"]
 [ext_resource type="Theme" uid="uid://d37e3tpsbxwak" path="res://Scenes/UI/Assets/GeneralTheme.tres" id="8_62qim"]
 
-[node name="ProtoBattleDirector" type="Node2D" node_paths=PackedStringArray("CD", "CM", "Audio", "_focusedButton")]
+[node name="ProtoBattleDirector" type="Node2D" node_paths=PackedStringArray("CD", "CM", "Audio", "_reinitButton", "_playButton")]
 process_mode = 1
 script = ExtResource("1_jmdo1")
 CD = NodePath("Conductor")
 CM = NodePath("SubViewport")
 Audio = NodePath("AudioStreamPlayer")
-_focusedButton = NodePath("StartButton")
+_reinitButton = NodePath("ReInitButton")
+_playButton = NodePath("PlayButton")
 metadata/_edit_lock_ = true
 
 [node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
@@ -28,9 +29,8 @@ script = ExtResource("3_elcaj")
 CM = NodePath("../SubViewport")
 
 [node name="SubViewport" parent="." instance=ExtResource("5_r2xh0")]
-offset_left = 80.0
 offset_top = 180.0
-offset_right = 560.0
+offset_right = 640.0
 offset_bottom = 360.0
 
 [node name="BackGround" type="TextureRect" parent="."]
@@ -39,17 +39,26 @@ offset_right = 640.0
 offset_bottom = 178.0
 texture = ExtResource("6_0jtpx")
 
-[node name="BattleFrame" type="TextureRect" parent="."]
-z_index = 1
-offset_top = 178.0
+[node name="NinePatchRect" type="NinePatchRect" parent="."]
+offset_top = 180.0
 offset_right = 640.0
 offset_bottom = 360.0
 texture = ExtResource("7_klvil")
+region_rect = Rect2(107, 0, 396, 182)
 
-[node name="StartButton" type="Button" parent="."]
-offset_left = 422.0
-offset_top = 130.0
-offset_right = 624.0
-offset_bottom = 167.0
+[node name="PlayButton" type="Button" parent="."]
+offset_left = 561.0
+offset_top = 52.0
+offset_right = 604.0
+offset_bottom = 89.0
 theme = ExtResource("8_62qim")
-text = "BATTLE_ROOM_BEGIN_BUTTON"
+text = "Play"
+
+[node name="ReInitButton" type="Button" parent="."]
+offset_left = 547.0
+offset_top = 10.0
+offset_right = 627.0
+offset_bottom = 47.0
+theme = ExtResource("8_62qim")
+text = "RESET
+"
