@@ -110,14 +110,7 @@ public partial class OptionsMenu : CanvasLayer, IFocusableMenu
 
     private void HighContrastChanged(bool toggled)
     {
-        StageProducer.ContrastFilter.Visible = toggled;
+        //StageProducer.ContrastFilter.Visible = toggled;
         SaveSystem.UpdateConfig(SaveSystem.ConfigSettings.HighContrast, toggled);
-    }
-
-    private void OpenHowToPlay()
-    {
-        HowToPlay howtoPlay = GD.Load<PackedScene>(HowToPlay.LoadPath).Instantiate<HowToPlay>();
-        AddChild(howtoPlay);
-        howtoPlay.OpenMenu(this);
     }
 }

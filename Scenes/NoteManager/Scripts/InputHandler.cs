@@ -86,29 +86,4 @@ public partial class InputHandler : Node2D
             SaveSystem.UpdateConfig(SaveSystem.ConfigSettings.InputType, "CONTROLLER");
         }
     }
-
-    public void FeedbackEffect(ArrowType arrow, Timing timed)
-    {
-        // Get the particle node for this arrow
-        var particles = Arrows[(int)arrow].Node.Particles;
-
-        // Set the particle amount based on timing
-        int particleAmount;
-        switch (timed)
-        {
-            case Timing.Perfect:
-                particleAmount = 10;
-                break;
-            case Timing.Good:
-                particleAmount = 7;
-                break;
-            case Timing.Okay:
-                particleAmount = 4;
-                break;
-            default:
-                return;
-        }
-
-        particles.Emit(particleAmount);
-    }
 }

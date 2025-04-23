@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using FunkEngine;
+using FunkEngine.Classes.MidiMaestro;
 using Godot;
 using Melanchall.DryWetMidi.Interaction;
 
@@ -28,6 +29,28 @@ public partial class BattleDirector : Node2D
 
     private bool _initializedPlaying;
 
+    public static SongTemplate Song = new SongTemplate(
+        new SongData
+        {
+            Bpm = 120,
+            SongLength = -1,
+            NumLoops = 5,
+        },
+        "Song1",
+        "Audio/Song1.ogg",
+        "Audio/Midi/Song1.mid"
+    );
+
+    public static BattleConfig Config;
+
+    public static BattleConfig MakeBattleConfig()
+    {
+        BattleConfig result = new BattleConfig { RoomType = Stages.Battle };
+        result.EnemyScenePath = Song.EnemyScenePath;
+        result.CurSong = Song;
+        return result;
+    }
+
     #endregion
 
     #region Initialization
@@ -48,16 +71,15 @@ public partial class BattleDirector : Node2D
 
     public override void _Ready()
     {
-        StageProducer.Config = StageProducer.MakeBattleConfig();
-        SongData curSong = StageProducer.Config.CurSong.SongData;
-        Audio.SetStream(GD.Load<AudioStream>(StageProducer.Config.CurSong.AudioLocation));
+        Config = MakeBattleConfig();
+        SongData curSong = Config.CurSong.SongData;
+        Audio.SetStream(GD.Load<AudioStream>(Config.CurSong.AudioLocation));
         if (curSong.SongLength <= 0)
         {
             curSong.SongLength = Audio.Stream.GetLength();
         }
 
         TimeKeeper.InitVals(curSong.Bpm);
-        Harbinger.Init(this);
         CD.Initialize(curSong);
         CD.NoteInputEvent += OnTimedInput;
 
@@ -78,10 +100,6 @@ public partial class BattleDirector : Node2D
         if (Math.Floor(beat.BeatPos) >= Math.Floor((TimeKeeper.LastBeat + 1).BeatPos))
         {
             CD.ProgressiveSpawnNotes(beat);
-        }
-        if (beat.Loop > TimeKeeper.LastBeat.Loop)
-        {
-            Harbinger.Instance.InvokeChartLoop(beat.Loop, false);
         }
         TimeKeeper.LastBeat = beat;
     }
@@ -107,188 +125,6 @@ public partial class BattleDirector : Node2D
                 return; //Exit handling for a placed note
             return;
         }
-
-        Timing timed = CheckTiming(beatDif);
-    }
-
-    private Timing CheckTiming(double beatDif)
-    {
-        if (beatDif < _timingInterval * 1)
-        {
-            return Timing.Perfect;
-        }
-
-        if (beatDif < _timingInterval * 2)
-        {
-            return Timing.Good;
-        }
-
-        if (beatDif < _timingInterval * 3)
-        {
-            return Timing.Okay;
-        }
-
-        return Timing.Miss;
     }
     #endregion
-
-
-    #region BattleEffect Handling
-    private void AddEvent(IBattleEvent bEvent)
-    {
-        switch (bEvent.GetTrigger())
-        {
-            case BattleEffectTrigger.NotePlaced:
-                Harbinger.Instance.NotePlaced += bEvent.OnTrigger;
-                break;
-            case BattleEffectTrigger.OnLoop:
-                Harbinger.Instance.ChartLooped += bEvent.OnTrigger;
-                break;
-            case BattleEffectTrigger.NoteHit:
-                Harbinger.Instance.NoteHit += bEvent.OnTrigger;
-                break;
-            case BattleEffectTrigger.OnBattleEnd:
-                Harbinger.Instance.BattleEnded += bEvent.OnTrigger;
-                break;
-            case BattleEffectTrigger.OnDamageInstance:
-                Harbinger.Instance.OnDamageInstance += bEvent.OnTrigger;
-                break;
-        }
-    }
-
-    private void RemoveEvent(IBattleEvent bEvent)
-    {
-        switch (bEvent.GetTrigger())
-        {
-            case BattleEffectTrigger.NotePlaced:
-                Harbinger.Instance.NotePlaced -= bEvent.OnTrigger;
-                break;
-            case BattleEffectTrigger.OnLoop:
-                Harbinger.Instance.ChartLooped -= bEvent.OnTrigger;
-                break;
-            case BattleEffectTrigger.NoteHit:
-                Harbinger.Instance.NoteHit -= bEvent.OnTrigger;
-                break;
-            case BattleEffectTrigger.OnBattleEnd:
-                Harbinger.Instance.BattleEnded -= bEvent.OnTrigger;
-                break;
-            case BattleEffectTrigger.OnDamageInstance:
-                Harbinger.Instance.OnDamageInstance -= bEvent.OnTrigger;
-                break;
-        }
-    }
-
-    private void AddEnemyEffects(EnemyPuppet enemy)
-    {
-        foreach (var effect in enemy.GetBattleEvents())
-        {
-            AddEvent(effect);
-        }
-    }
-    #endregion
-
-    public partial class Harbinger : Resource
-    {
-        private static Harbinger _instance;
-        public static Harbinger Instance => _instance;
-
-        private BattleDirector _curDirector;
-
-        static Harbinger() { }
-
-        private Harbinger(BattleDirector BD)
-        {
-            _curDirector = BD;
-        }
-
-        internal static void Init(BattleDirector BD)
-        {
-            _instance = new Harbinger(BD);
-        }
-
-        /// <summary>
-        /// Event Args to handle event types triggering from the action of a note, without timing.
-        /// </summary>
-        /// <param name="bd">The BattleDirector calling the event.</param>
-        /// <param name="data">The note data of the passing note.</param>
-        public class NoteEventArgs(BattleDirector bd, ArrowData data) : BattleEventArgs(bd)
-        {
-            public ArrowData Data = data;
-        }
-
-        /// <summary>
-        /// Event Args to handle event types triggering from the start of a new loop.
-        /// </summary>
-        /// <param name="bd">The BattleDirector calling the event.</param>
-        /// <param name="incomingLoop">The loop starting.</param>
-        public class LoopEventArgs(BattleDirector bd, int incomingLoop, bool artificialLoop = true)
-            : BattleEventArgs(bd)
-        {
-            public int Loop = incomingLoop;
-            public bool ArtificialLoop = artificialLoop;
-        }
-
-        /// <summary>
-        /// Event Args to handle notes being hit
-        /// </summary>
-        /// <param name="bd">The BattleDirector calling the event.</param>
-        /// <param name="note">The Note being hit.</param>
-        public class NoteHitArgs(BattleDirector bd, Note note, Timing timing) : BattleEventArgs(bd)
-        {
-            public Note Note = note;
-            public Timing Timing = timing;
-        }
-
-        internal delegate void NotePlacedHandler(BattleEventArgs e);
-        internal event NotePlacedHandler NotePlaced;
-
-        public void InvokeNotePlaced(ArrowData data)
-        {
-            NotePlaced?.Invoke(new NoteEventArgs(_curDirector, data));
-        }
-
-        internal delegate void ChartLoopHandler(BattleEventArgs e);
-        internal event ChartLoopHandler ChartLooped;
-
-        public void InvokeChartLoop(int incLoop, bool artificialLoop = true)
-        {
-            ChartLooped?.Invoke(new LoopEventArgs(_curDirector, incLoop, artificialLoop));
-        }
-
-        internal delegate void NoteHitHandler(BattleEventArgs e);
-        internal event NoteHitHandler NoteHit;
-
-        public void InvokeNoteHit(Note note, Timing timing)
-        {
-            NoteHit?.Invoke(new NoteHitArgs(_curDirector, note, timing));
-        }
-
-        internal delegate void BattleEndedHandler(BattleEventArgs e);
-        internal event BattleEndedHandler BattleEnded;
-
-        public void InvokeBattleEnded()
-        {
-            BattleEnded?.Invoke(new BattleEventArgs(_curDirector));
-        }
-
-        /// <summary>
-        /// Event Args to handle a damage instance being dealt. Happens before taking damage.
-        /// This allows damage to be intercepted, to be reduced/increased, to counter, or heal based on incoming damage.
-        /// </summary>
-        /// <param name="bd">The BattleDirector calling the event.</param>
-        /// <param name="dmg">The damage instance being thrown.</param>
-        public class OnDamageInstanceArgs(BattleDirector bd, DamageInstance dmg)
-            : BattleEventArgs(bd)
-        {
-            public DamageInstance Dmg = dmg;
-        }
-
-        internal delegate void OnDamageInstanceHandler(OnDamageInstanceArgs e);
-        internal event OnDamageInstanceHandler OnDamageInstance;
-
-        public void InvokeOnDamageInstance(DamageInstance dmg)
-        {
-            OnDamageInstance?.Invoke(new OnDamageInstanceArgs(_curDirector, dmg));
-        }
-    }
 }

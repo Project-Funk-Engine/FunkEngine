@@ -10,7 +10,7 @@ using FileAccess = Godot.FileAccess;
 public static class SaveSystem
 {
     #region Config
-    private const string UserConfigPath = "user://Options.cfg";
+    private const string UserConfigPath = "user://EditorOptions.cfg";
     private static ConfigFile _curConfigData;
 
     private const float DefaultVolume = 1f;

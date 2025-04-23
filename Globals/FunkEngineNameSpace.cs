@@ -34,7 +34,6 @@ public struct CheckerData
 public struct BattleConfig
 {
     public Stages RoomType;
-    public MapGrid.Room BattleRoom;
     public string[] EnemyScenePath;
     public SongTemplate CurSong;
 }
@@ -276,6 +275,7 @@ public enum Rarity
  * Essentially a width by height grid. Valid rooms are determined by choosing a random starting room at height: 0, and makes random walks to height: height.
  * Walks go from x,y to {x/x+1/x-1},y+1</summary>
  */
+/*
 public class MapGrid
 {
     private int[,] _map;
@@ -365,7 +365,7 @@ public class MapGrid
 
     /**
     * <summary>Initializes the map with max <c>width</c>, max <c>height</c>, and with number of <c>paths</c>.</summary>
-    */
+    #1#
     public void InitMapGrid(MapConfig curConfig)
     {
         _curIdx = 0;
@@ -385,7 +385,7 @@ public class MapGrid
         AddBossRoom(curConfig.Width, curConfig.Height);
     }
 
-    /**Start at x, y, assume prev room exists. Picks new x pos within +/- 1, attaches recursively*/
+    /**Start at x, y, assume prev room exists. Picks new x pos within +/- 1, attaches recursively#1#
     private void GeneratePath_r(int x, int y, MapConfig curConfig)
     {
         int nextX = StageProducer.GlobalRng.RandiRange(
@@ -450,6 +450,7 @@ public class MapGrid
         }
     }
 }
+*/
 
 #region Interfaces
 

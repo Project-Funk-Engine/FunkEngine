@@ -229,13 +229,4 @@ public partial class ChartManager : SubViewportContainer
         return placeable; //No truly hittable notes, and no notes in current beat
     }
     #endregion
-
-    public void ComboText(Timing timed, ArrowType arrow, int currentCombo)
-    {
-        TextParticle newText = new TextParticle();
-        AddChild(newText);
-        newText.Position = IH.Arrows[(int)arrow].Node.Position - newText.Size / 2;
-        IH.FeedbackEffect(arrow, timed);
-        newText.Text = Tr("BATTLE_ROOM_" + timed.ToString().ToUpper()) + $" {currentCombo}";
-    }
 }

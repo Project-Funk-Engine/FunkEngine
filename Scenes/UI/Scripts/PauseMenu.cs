@@ -67,6 +67,6 @@ public partial class PauseMenu : Control, IFocusableMenu
 
     private void Quit()
     {
-        StageProducer.LiveInstance.TransitionStage(Stages.Quit);
+        GetTree().Quit();
     }
 }
