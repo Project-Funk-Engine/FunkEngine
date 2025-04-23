@@ -44,21 +44,20 @@ public struct BattleConfig
  */
 public struct ArrowData : IEquatable<ArrowData>, IComparable<ArrowData>
 {
-    public ArrowData(ArrowType type, Beat beat, Note note, double length = 0)
+    public ArrowData(ArrowType type, Beat beat, bool isNull, double length = 0)
     {
         Beat = beat;
         Type = type;
-        NoteRef = note;
         Length = length;
+        IsNull = isNull;
     }
 
     public Beat Beat;
     public readonly double Length; //in beats, should never be >= loop
     public readonly ArrowType Type;
-    public readonly Note NoteRef = null;
+    public bool IsNull;
 
-    public static ArrowData Placeholder { get; private set; } =
-        new(default, default, new Note(-1, "", ""));
+    public static ArrowData Placeholder { get; private set; } = new(default, default, true);
 
     public ArrowData BeatFromLength()
     {

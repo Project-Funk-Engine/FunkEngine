@@ -16,7 +16,6 @@ public partial class PauseMenu : Control, IFocusableMenu
         PauseButtons[0].Pressed += ReturnToPrev;
         PauseButtons[1].Pressed += OpenOptions;
         PauseButtons[2].Pressed += Quit;
-        PauseButtons[3].Pressed += QuitToMainMenu;
     }
 
     private void OpenOptions()
@@ -69,10 +68,5 @@ public partial class PauseMenu : Control, IFocusableMenu
     private void Quit()
     {
         StageProducer.LiveInstance.TransitionStage(Stages.Quit);
-    }
-
-    private void QuitToMainMenu()
-    {
-        StageProducer.LiveInstance.TransitionStage(Stages.Title);
     }
 }

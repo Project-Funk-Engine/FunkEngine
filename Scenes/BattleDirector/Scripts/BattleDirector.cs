@@ -12,12 +12,6 @@ public partial class BattleDirector : Node2D
 
     public static readonly string LoadPath = "res://Scenes/BattleDirector/BattleScene.tscn";
 
-    public PlayerPuppet Player;
-    private EnemyPuppet[] _enemies;
-
-    [Export]
-    public Marker2D[] PuppetMarkers = new Marker2D[4]; //[0] is always player
-
     [Export]
     private Conductor CD;
 
@@ -64,39 +58,11 @@ public partial class BattleDirector : Node2D
 
         TimeKeeper.InitVals(curSong.Bpm);
         Harbinger.Init(this);
-        InitPlayer();
-        InitEnemies();
         CD.Initialize(curSong);
         CD.NoteInputEvent += OnTimedInput;
 
         _focusedButton.GrabFocus();
         _focusedButton.Pressed += SyncStartWithMix;
-    }
-
-    private void InitPlayer()
-    {
-        Player = GD.Load<PackedScene>(PlayerPuppet.LoadPath).Instantiate<PlayerPuppet>();
-        PuppetMarkers[0].AddChild(Player);
-        Player.Defeated += CheckBattleStatus;
-        EventizeRelics();
-    }
-
-    private void InitEnemies()
-    {
-        //TODO: Refine
-        _enemies = new EnemyPuppet[StageProducer.Config.EnemyScenePath.Length];
-        for (int i = 0; i < StageProducer.Config.EnemyScenePath.Length; i++)
-        {
-            EnemyPuppet enemy = GD.Load<PackedScene>(StageProducer.Config.EnemyScenePath[0])
-                .Instantiate<EnemyPuppet>();
-            if (_enemies.Length == 1)
-                PuppetMarkers[2].AddChild(enemy);
-            else
-                PuppetMarkers[i + 1].AddChild(enemy);
-            enemy.Defeated += CheckBattleStatus;
-            _enemies[i] = enemy;
-            AddEnemyEffects(enemy);
-        }
     }
 
     public override void _Process(double delta)
@@ -122,52 +88,27 @@ public partial class BattleDirector : Node2D
     #endregion
 
     #region Input&Timing
-    public override void _UnhandledInput(InputEvent @event)
-    {
-        if (@event is InputEventKey eventKey && eventKey.Pressed && !eventKey.Echo)
-        {
-            if (eventKey.Keycode == Key.Key0)
-            {
-                DebugKillEnemy();
-            }
-        }
-    }
-
     private bool PlayerAddNote(ArrowType type, Beat beat)
     {
-        Note noteToPlace = Scribe.NoteDictionary[1].Clone();
-        noteToPlace.OnHit(this, Timing.Okay);
-
-        CD.AddPlayerNote(noteToPlace, type, beat);
-        Harbinger.Instance.InvokeNotePlaced(new ArrowData(type, beat, noteToPlace));
-        Harbinger.Instance.InvokeNoteHit(noteToPlace, Timing.Okay); //TODO: test how this feels? maybe take it out later
+        CD.AddPlayerNote(type, beat);
         return true;
     }
 
     //Only called from CD signal when a note is processed
     private void OnTimedInput(ArrowData data, double beatDif)
     {
-        if (data.NoteRef == ArrowData.Placeholder.NoteRef)
+        if (data == ArrowData.Placeholder)
             return; //An inactive note was passed, for now do nothing, could force miss.
-        if (data.NoteRef == null) //An empty beat
+        if (data.IsNull) //An empty beat
         {
             if ((int)data.Beat.BeatPos % (int)TimeKeeper.BeatsPerLoop == 0)
                 return; //We never ever try to place at 0
             if (PlayerAddNote(data.Type, data.Beat))
                 return; //Exit handling for a placed note
-            ForceMiss(data.Type); //Else force miss when a note can't be placed.
             return;
         }
 
         Timing timed = CheckTiming(beatDif);
-
-        data.NoteRef.OnHit(this, timed);
-        Harbinger.Instance.InvokeNoteHit(data.NoteRef, timed);
-    }
-
-    private void ForceMiss(ArrowType type)
-    {
-        Player.TakeDamage(new DamageInstance(4, null, Player));
     }
 
     private Timing CheckTiming(double beatDif)
@@ -191,108 +132,6 @@ public partial class BattleDirector : Node2D
     }
     #endregion
 
-    #region Battle End
-    private void CheckBattleStatus(PuppetTemplate puppet) //Called when a puppet dies
-    {
-        if (puppet == Player)
-        {
-            OnBattleLost();
-            return;
-        }
-        if (puppet is EnemyPuppet && IsBattleWon())
-            OnBattleWon(); //will have to adjust this to account for when we have multiple enemies at once
-    }
-
-    private bool IsBattleWon()
-    {
-        return GetFirstEnemy() == null;
-    }
-
-    private void OnBattleWon()
-    {
-        Audio.StreamPaused = true;
-        CleanUpRelics();
-        ShowRewardSelection(3);
-    }
-
-    private void OnBattleLost()
-    {
-        Audio.StreamPaused = true;
-        SaveSystem.ClearSave();
-        AddChild(GD.Load<PackedScene>(EndScreen.LoadPath).Instantiate());
-        ProcessMode = ProcessModeEnum.Disabled;
-    }
-
-    private void ShowRewardSelection(int amount)
-    {
-        var rewardSelect = RewardSelect.CreateSelection(
-            this,
-            Player.Stats,
-            amount,
-            StageProducer.Config.RoomType
-        );
-        rewardSelect.GetNode<Label>("%TopLabel").Text = Tr("BATTLE_ROOM_WIN");
-        rewardSelect.Selected += TransitionOutOfBattle;
-    }
-
-    private void TransitionOutOfBattle()
-    {
-        StageProducer.LiveInstance.TransitionStage(Stages.Map);
-    }
-    #endregion
-
-    #region Battles
-    public void DealDamage(Note note, int damage, PuppetTemplate source)
-    {
-        PuppetTemplate[] targets = GetTargets(note.TargetType);
-        foreach (PuppetTemplate target in targets)
-        {
-            target.TakeDamage(new DamageInstance(damage, source, target));
-        }
-    }
-
-    public void DealDamage(
-        Targetting targetting,
-        int damage,
-        PuppetTemplate source,
-        bool targetPlayer = false
-    )
-    {
-        PuppetTemplate[] targets = GetTargets(targetting);
-        foreach (PuppetTemplate target in targets)
-        {
-            target.TakeDamage(new DamageInstance(damage, source, target));
-        }
-    }
-
-    private PuppetTemplate[] GetTargets(Targetting targetting)
-    {
-        switch (targetting)
-        {
-            case Targetting.Player:
-                return [Player];
-            case Targetting.First:
-                if (GetFirstEnemy() != null)
-                    return [GetFirstEnemy()];
-                return [];
-            case Targetting.All:
-                return _enemies.Where(x => x.GetCurrentHealth() > 0).ToArray<PuppetTemplate>();
-            default:
-                return null;
-        }
-    }
-
-    private PuppetTemplate GetFirstEnemy()
-    {
-        foreach (var enemy in _enemies)
-        {
-            if (enemy.GetCurrentHealth() > 0)
-                return enemy;
-        }
-
-        return null;
-    }
-    #endregion
 
     #region BattleEffect Handling
     private void AddEvent(IBattleEvent bEvent)
@@ -344,28 +183,6 @@ public partial class BattleDirector : Node2D
         foreach (var effect in enemy.GetBattleEvents())
         {
             AddEvent(effect);
-        }
-    }
-
-    private void EventizeRelics()
-    {
-        foreach (var relic in Player.Stats.CurRelics)
-        {
-            foreach (var effect in relic.Effects)
-            {
-                AddEvent(effect);
-            }
-        }
-    }
-
-    private void CleanUpRelics()
-    {
-        foreach (var relic in Player.Stats.CurRelics)
-        {
-            foreach (var effect in relic.Effects)
-            {
-                effect.OnBattleEnd();
-            }
         }
     }
     #endregion
@@ -472,14 +289,6 @@ public partial class BattleDirector : Node2D
         public void InvokeOnDamageInstance(DamageInstance dmg)
         {
             OnDamageInstance?.Invoke(new OnDamageInstanceArgs(_curDirector, dmg));
-        }
-    }
-
-    private void DebugKillEnemy()
-    {
-        foreach (EnemyPuppet enemy in _enemies)
-        {
-            enemy.TakeDamage(new DamageInstance(1000, null, enemy));
         }
     }
 }

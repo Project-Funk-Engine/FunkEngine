@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=3 uid="uid://hjho5n2f8rkf"]
+[gd_scene load_steps=5 format=3 uid="uid://c3pryqq0qh85l"]
 
 [ext_resource type="Script" uid="uid://cj4bmpwdwg4qy" path="res://Scenes/UI/Scripts/EndScreen.cs" id="1_37m3y"]
 [ext_resource type="Texture2D" uid="uid://ck16vyh1q68ri" path="res://Scenes/UI/Assets/UI_ForestBackground.png" id="2_tqft0"]

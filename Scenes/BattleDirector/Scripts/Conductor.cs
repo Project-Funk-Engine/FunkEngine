@@ -44,7 +44,6 @@ public partial class Conductor : Node
             foreach (MidiNoteInfo mNote in MM.GetNotes(type))
             {
                 AddNoteData(
-                    Scribe.NoteDictionary[0],
                     type,
                     new Beat((int)mNote.GetStartTimeBeat()),
                     mNote.GetDurationBeats()
@@ -71,9 +70,9 @@ public partial class Conductor : Node
     }
     #endregion
 
-    private int AddNoteData(Note noteRef, ArrowType type, Beat beat, double length = 0)
+    private int AddNoteData(ArrowType type, Beat beat, double length = 0)
     {
-        ArrowData result = new ArrowData(type, beat, noteRef, length);
+        ArrowData result = new ArrowData(type, beat, false, length);
         if (_noteData.Count == 0)
         {
             _noteData.Add(result);
@@ -110,14 +109,14 @@ public partial class Conductor : Node
         _noteData[index] = new ArrowData(
             _noteData[index].Type,
             _noteData[index].Beat.IncDecLoop(1),
-            _noteData[index].NoteRef,
+            _noteData[index].IsNull,
             _noteData[index].Length
         ); //Structs make me sad sometimes
     }
 
-    public void AddPlayerNote(Note noteRef, ArrowType type, Beat beat)
+    public void AddPlayerNote(ArrowType type, Beat beat)
     {
-        int index = AddNoteData(noteRef, type, beat); //Currently player notes aren't sorted correctly
+        int index = AddNoteData(type, beat); //Currently player notes aren't sorted correctly
         if (index != -1)
             SpawnNote(index, true);
         else

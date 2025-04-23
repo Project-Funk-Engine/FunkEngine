@@ -37,7 +37,6 @@ public partial class Cartographer : Node2D
     public override void _Ready()
     {
         DrawMap();
-        SaveSystem.SaveGame();
         if (
             StageProducer.GetCurRoom().Type == Stages.Boss
             && StageProducer.GetCurRoom().Children.Length == 0

@@ -6,7 +6,7 @@
 [ext_resource type="Texture2D" uid="uid://djd6iw2g84bba" path="res://Scenes/UI/Assets/UI_CenterFrame.png" id="3_qydxi"]
 [ext_resource type="Theme" uid="uid://d37e3tpsbxwak" path="res://Scenes/UI/Assets/GeneralTheme.tres" id="4_r616m"]
 
-[node name="OptionsMenu" type="CanvasLayer" node_paths=PackedStringArray("_focused", "_volumeSlider", "_closeButton", "_controlsButton", "_highContrastToggle", "_howToPlayButton")]
+[node name="OptionsMenu" type="CanvasLayer" node_paths=PackedStringArray("_focused", "_volumeSlider", "_closeButton", "_controlsButton", "_highContrastToggle")]
 process_mode = 3
 script = ExtResource("1_yjq7i")
 _focused = NodePath("Control/CenterContainer/MarginContainer/MarginContainer/VBoxContainer/HBoxContainer/CheckBox")
@@ -14,7 +14,6 @@ _volumeSlider = NodePath("Control/CenterContainer/MarginContainer/MarginContaine
 _closeButton = NodePath("Control/CenterContainer/MarginContainer/MarginContainer/VBoxContainer/TitleButton")
 _controlsButton = NodePath("Control/CenterContainer/MarginContainer/MarginContainer/VBoxContainer/ControlsButton")
 _highContrastToggle = NodePath("Control/CenterContainer/MarginContainer/MarginContainer/VBoxContainer/HBoxContainer/CheckBox")
-_howToPlayButton = NodePath("Control/CenterContainer/MarginContainer/MarginContainer/VBoxContainer/HowToPlayButton")
 
 [node name="Control" type="Control" parent="."]
 layout_mode = 3
@@ -125,11 +124,6 @@ script = ExtResource("1_qyvkw")
 layout_mode = 2
 theme = ExtResource("4_r616m")
 text = "TITLE_CONTROLS"
-
-[node name="HowToPlayButton" type="Button" parent="Control/CenterContainer/MarginContainer/MarginContainer/VBoxContainer"]
-layout_mode = 2
-theme = ExtResource("4_r616m")
-text = "HOW_TO_PLAY"
 
 [node name="TitleButton" type="Button" parent="Control/CenterContainer/MarginContainer/MarginContainer/VBoxContainer"]
 layout_mode = 2

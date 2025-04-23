@@ -83,39 +83,7 @@ public partial class StageProducer : Node
         PlayerStats = new PlayerStats();
 
         CurRoom = Map.GetRooms()[0].Idx;
-        Scribe.InitRelicPools();
         IsInitialized = true;
-    }
-
-    private bool LoadGame()
-    {
-        SaveSystem.SaveFile sv = SaveSystem.LoadGame();
-        if (sv == null)
-        {
-            GD.PushWarning("Can't load game, either file 404 or invalid file.");
-            return false;
-        }
-        GlobalRng.Seed = sv.RngSeed;
-        CurArea = (Area)sv.Area;
-        GenerateMapConsistent();
-        GlobalRng.State = sv.RngState;
-        CurRoom = sv.LastRoomIdx;
-
-        Scribe.InitRelicPools();
-
-        PlayerStats = new PlayerStats();
-        PlayerStats.CurNotes = [];
-        foreach (int noteId in sv.NoteIds)
-        {
-            PlayerStats.AddNote(Scribe.NoteDictionary[noteId]);
-        }
-        foreach (int relicId in sv.RelicIds)
-        {
-            PlayerStats.AddRelic(Scribe.RelicDictionary[relicId]);
-        }
-        PlayerStats.CurrentHealth = sv.PlayerHealth;
-        IsInitialized = true;
-        return true;
     }
     #endregion
 
@@ -152,11 +120,6 @@ public partial class StageProducer : Node
                 {
                     StartNewGame();
                 }
-                break;
-            case Stages.Load:
-                if (!LoadGame())
-                    StartNewGame();
-                GetTree().ChangeSceneToFile(Cartographer.LoadPath);
                 break;
             case Stages.Quit:
                 GetTree().Quit();

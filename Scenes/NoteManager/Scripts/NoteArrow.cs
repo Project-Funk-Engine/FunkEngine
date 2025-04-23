@@ -36,7 +36,6 @@ public partial class NoteArrow : Sprite2D
 
         Position = new Vector2(GetNewPosX(), parentChecker.Node.GlobalPosition.Y);
         RotationDegrees = parentChecker.Node.RotationDegrees;
-        IconSprite.Texture = arrowData.NoteRef.Texture;
         IconSprite.Rotation = -Rotation;
         OutlineSprite.Modulate = parentChecker.Color;
     }

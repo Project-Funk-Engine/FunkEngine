@@ -23,9 +23,6 @@ public partial class OptionsMenu : CanvasLayer, IFocusableMenu
     [Export]
     private CheckBox _highContrastToggle;
 
-    [Export]
-    private Button _howToPlayButton;
-
     private const float MinVolumeVal = 0f;
 
     public override void _Ready()
@@ -45,7 +42,6 @@ public partial class OptionsMenu : CanvasLayer, IFocusableMenu
         _closeButton.Pressed += ReturnToPrev;
         _controlsButton.Pressed += OpenControls;
         _highContrastToggle.Toggled += HighContrastChanged;
-        _howToPlayButton.Pressed += OpenHowToPlay;
     }
 
     public override void _Input(InputEvent @event)

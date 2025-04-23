@@ -105,8 +105,6 @@ public partial class ChartManager : SubViewportContainer
             arrowData,
             TimeKeeper.GetTimeOfBeat(arrowData.Beat)
         );
-        if (arrowData.NoteRef.IsPlayerNote())
-            noteArrow.SelfModulate = PlayerPuppet.NoteColor;
         if (preHit)
             noteArrow.NoteHit();
     }
@@ -197,19 +195,20 @@ public partial class ChartManager : SubViewportContainer
     }
     #endregion
 
+    public const double TimingMax = 0.5d;
+
     #region Determine Arrow From Input
     //TODO: Breakup and simplify where possible
     private ArrowData GetArrowFromInput(ArrowType type)
     {
-        ArrowData placeable = new ArrowData(type, TimeKeeper.LastBeat.RoundBeat(), null);
+        ArrowData placeable = new ArrowData(type, TimeKeeper.LastBeat.RoundBeat(), true);
 
         if (_queuedArrows[(int)type].Count == 0)
             return placeable; //Empty return null, place note action
 
         List<NoteArrow> activeArrows = _queuedArrows[(int)type]
             .Where(arrow =>
-                !arrow.IsHit
-                && Math.Abs((arrow.Beat - TimeKeeper.LastBeat).BeatPos) <= Note.TimingMax
+                !arrow.IsHit && Math.Abs((arrow.Beat - TimeKeeper.LastBeat).BeatPos) <= TimingMax
             )
             .OrderBy(arrow => Math.Abs((arrow.Beat - TimeKeeper.LastBeat).BeatPos)) //Sort by closest to cur beat
             .ToList();

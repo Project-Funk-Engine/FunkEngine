@@ -48,7 +48,7 @@ public partial class HoldArrow : NoteArrow
             NoteRelease();
             RaiseMissed(this);
         }
-        if (IsHit && (TimeKeeper.LastBeat - EndBeat > new Beat(Note.TimingMax))) //hit, only miss if held too long, handle timing on end beat
+        if (IsHit && (TimeKeeper.LastBeat - EndBeat > new Beat(ChartManager.TimingMax))) //hit, only miss if held too long, handle timing on end beat
         {
             NoteRelease();
             RaiseMissed(this);
