@@ -17,10 +17,10 @@ public partial class MidiMaestro : Resource
     public static TimeSignature TimeSignature { get; private set; }
 
     //The four note rows that we care about
-    private readonly MidiNoteInfo[] _upNotes;
-    private readonly MidiNoteInfo[] _downNotes;
-    private readonly MidiNoteInfo[] _leftNotes;
-    private readonly MidiNoteInfo[] _rightNotes;
+    private readonly NoteInfo[] _upNotes;
+    private readonly NoteInfo[] _downNotes;
+    private readonly NoteInfo[] _leftNotes;
+    private readonly NoteInfo[] _rightNotes;
 
     //private MidiFile strippedSong;
     /**
@@ -39,11 +39,17 @@ public partial class MidiMaestro : Resource
             GD.PushError("ERROR: Unable to load level Midi file: " + filePath);
         }
 
-        _midiFile = MidiFile.Read(filePath);
-        TempoMap = _midiFile.GetTempoMap();
-        TimeSignature = TempoMap.GetTimeSignatureAtTime(new MidiTimeSpan());
+        NoteChart savedChart = ResourceLoader.Load<NoteChart>(filePath);
+        _upNotes = savedChart.GetLane(ArrowType.Up).ToArray();
+        _downNotes = savedChart.GetLane(ArrowType.Down).ToArray();
+        _leftNotes = savedChart.GetLane(ArrowType.Left).ToArray();
+        _rightNotes = savedChart.GetLane(ArrowType.Right).ToArray();
 
-        //Strip out the notes from the midi file
+        /*_midiFile = MidiFile.Read(filePath);
+        TempoMap = _midiFile.GetTempoMap();
+        TimeSignature = TempoMap.GetTimeSignatureAtTime(new MidiTimeSpan());*/
+
+        /*//Strip out the notes from the midi file
         foreach (var track in _midiFile.GetTrackChunks())
         {
             string trackName = track.Events.OfType<SequenceTrackNameEvent>().FirstOrDefault()?.Text;
@@ -67,13 +73,13 @@ public partial class MidiMaestro : Resource
                     _rightNotes = noteEvents;
                     break;
             }
-        }
+        }*/
     }
 
     /**
      * <summary>Gets midiNoteInfo by lane. </summary>
      */
-    public MidiNoteInfo[] GetNotes(ArrowType arrowType)
+    public NoteInfo[] GetNotes(ArrowType arrowType)
     {
         return arrowType switch
         {
@@ -86,7 +92,7 @@ public partial class MidiMaestro : Resource
     }
 }
 
-//A facade to wrap the midi notes. This is a simple class that wraps a Note object from the DryWetMidi library.
+/*//A facade to wrap the midi notes. This is a simple class that wraps a Note object from the DryWetMidi library.
 public class MidiNoteInfo
 {
     private readonly Melanchall.DryWetMidi.Interaction.Note _note;
@@ -120,4 +126,4 @@ public class MidiNoteInfo
         );
         return beatsBar.Bars * MidiMaestro.TimeSignature.Numerator + beatsBar.Beats;
     }
-}
+}*/

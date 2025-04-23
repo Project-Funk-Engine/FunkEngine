@@ -41,13 +41,9 @@ public partial class Conductor : Node
     {
         foreach (ArrowType type in Enum.GetValues(typeof(ArrowType)))
         {
-            foreach (MidiNoteInfo mNote in MM.GetNotes(type))
+            foreach (NoteInfo mNote in MM.GetNotes(type))
             {
-                AddNoteData(
-                    type,
-                    new Beat((int)mNote.GetStartTimeBeat()),
-                    mNote.GetDurationBeats()
-                );
+                AddNoteData(type, new Beat(mNote.Beat), mNote.Length);
             }
         }
         SpawnInitialNotes();

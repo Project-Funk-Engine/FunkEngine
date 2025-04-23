@@ -39,7 +39,7 @@ public partial class BattleDirector : Node2D
         },
         "Song1",
         "Audio/Song1.ogg",
-        "Audio/Midi/Song1.mid"
+        "Audio/Midi/Song1.tres"
     );
 
     public static BattleConfig Config;
