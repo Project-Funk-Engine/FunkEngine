@@ -25,9 +25,6 @@ public partial class BattleDirector : Node2D
     private ChartManager CM;
 
     [Export]
-    public NotePlacementBar NPB;
-
-    [Export]
     private AudioStreamPlayer Audio;
 
     [Export]
@@ -133,20 +130,12 @@ public partial class BattleDirector : Node2D
             {
                 DebugKillEnemy();
             }
-
-            if (eventKey.Keycode == Key.Key9)
-            {
-                DebugRefillEnergy();
-            }
         }
     }
 
     private bool PlayerAddNote(ArrowType type, Beat beat)
     {
-        if (!NPB.CanPlaceNote())
-            return false;
-
-        Note noteToPlace = NPB.NotePlaced();
+        Note noteToPlace = Scribe.NoteDictionary[1].Clone();
         noteToPlace.OnHit(this, Timing.Okay);
 
         CD.AddPlayerNote(noteToPlace, type, beat);
@@ -174,14 +163,10 @@ public partial class BattleDirector : Node2D
 
         data.NoteRef.OnHit(this, timed);
         Harbinger.Instance.InvokeNoteHit(data.NoteRef, timed);
-        NPB.HandleTiming(timed, data.Type);
-        CM.ComboText(timed, data.Type, NPB.GetCurrentCombo());
     }
 
     private void ForceMiss(ArrowType type)
     {
-        NPB.HandleTiming(Timing.Miss, type);
-        CM.ComboText(Timing.Miss, type, NPB.GetCurrentCombo());
         Player.TakeDamage(new DamageInstance(4, null, Player));
     }
 
@@ -278,25 +263,6 @@ public partial class BattleDirector : Node2D
         {
             target.TakeDamage(new DamageInstance(damage, source, target));
         }
-    }
-
-    public void AddStatus(Targetting targetting, StatusEffect status)
-    {
-        PuppetTemplate[] targets = GetTargets(targetting);
-        foreach (PuppetTemplate target in targets)
-        {
-            target.AddStatusEffect(status);
-        }
-
-        status.StatusEnd += RemoveStatus;
-        AddEvent(status);
-    }
-
-    public void RemoveStatus(StatusEffect status)
-    {
-        status.Sufferer.RemoveStatusEffect(status);
-        status.StatusEnd -= RemoveStatus;
-        RemoveEvent(status);
     }
 
     private PuppetTemplate[] GetTargets(Targetting targetting)
@@ -515,10 +481,5 @@ public partial class BattleDirector : Node2D
         {
             enemy.TakeDamage(new DamageInstance(1000, null, enemy));
         }
-    }
-
-    private void DebugRefillEnergy()
-    {
-        NPB.IncreaseCharge(100);
     }
 }

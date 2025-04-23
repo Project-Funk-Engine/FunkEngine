@@ -100,20 +100,6 @@ public partial class Scribe : Node
             0.25f
         ),
         new Note(
-            6,
-            "PlayerBlock",
-            "Gives player one charge of block.",
-            GD.Load<Texture2D>("res://Classes/Notes/Assets/Note_PlayerBlock.png"),
-            null,
-            1,
-            (director, note, timing) =>
-            {
-                if (timing == Timing.Miss)
-                    return;
-                director.AddStatus(Targetting.Player, StatusEffect.Block.GetInstance()); //todo: should scale with timing????
-            }
-        ),
-        new Note(
             7,
             "PlayerExplosive",
             "Deals damage to all enemies.",
@@ -142,20 +128,6 @@ public partial class Scribe : Node
                     return;
                 director.DealDamage(note, (int)timing * note.GetBaseVal(), director.Player);
                 note.SetBaseVal(note.GetBaseVal() + 1);
-            }
-        ),
-        new Note(
-            9,
-            "PlayerPoison",
-            "Applies stacks of poison based on timing.",
-            GD.Load<Texture2D>("res://Classes/Notes/Assets/Note_PlayerPoison.png"),
-            null,
-            1,
-            (director, note, timing) =>
-            {
-                if (timing == Timing.Miss)
-                    return;
-                director.AddStatus(Targetting.First, StatusEffect.Poison.GetInstance((int)timing));
             }
         ),
     };
@@ -195,44 +167,6 @@ public partial class Scribe : Node
                     (e, self, val) =>
                     {
                         e.BD.Player.Heal(val);
-                    }
-                ),
-            }
-        ),
-        new RelicTemplate(
-            2,
-            "Auroboros",
-            "Bigger number, better person. Increases combo multiplier every riff.",
-            Rarity.Common,
-            GD.Load<Texture2D>("res://Classes/Relics/Assets/Relic_Auroboros.png"),
-            new RelicEffect[]
-            {
-                new RelicEffect(
-                    BattleEffectTrigger.OnLoop,
-                    1,
-                    (e, self, val) =>
-                    {
-                        e.BD.NPB.IncreaseBonusMult(val);
-                        self.Value++;
-                    }
-                ),
-            }
-        ),
-        new RelicTemplate(
-            3,
-            "Colorboros",
-            "Taste the rainbow. Charges the freestyle bar every riff.",
-            Rarity.Common,
-            GD.Load<Texture2D>("res://Classes/Relics/Assets/Relic_Colorboros.png"),
-            new RelicEffect[]
-            {
-                new RelicEffect(
-                    BattleEffectTrigger.OnLoop,
-                    10,
-                    (e, self, val) =>
-                    {
-                        e.BD.NPB.IncreaseCharge(val);
-                        self.Value += 5;
                     }
                 ),
             }
