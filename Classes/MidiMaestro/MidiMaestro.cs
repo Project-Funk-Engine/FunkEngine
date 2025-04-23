@@ -2,8 +2,6 @@ using System;
 using System.Linq;
 using FunkEngine;
 using Godot;
-using Melanchall.DryWetMidi.Core;
-using Melanchall.DryWetMidi.Interaction;
 
 /**
  <summary> MidiMaestro: Manages reading midi file into lane note information.</summary>
@@ -11,11 +9,6 @@ using Melanchall.DryWetMidi.Interaction;
  */
 public partial class MidiMaestro : Resource
 {
-    private MidiFile _midiFile;
-
-    public static TempoMap TempoMap { get; private set; }
-    public static TimeSignature TimeSignature { get; private set; }
-
     //The four note rows that we care about
     private readonly NoteInfo[] _upNotes;
     private readonly NoteInfo[] _downNotes;
@@ -44,40 +37,10 @@ public partial class MidiMaestro : Resource
         _downNotes = savedChart.GetLane(ArrowType.Down).ToArray();
         _leftNotes = savedChart.GetLane(ArrowType.Left).ToArray();
         _rightNotes = savedChart.GetLane(ArrowType.Right).ToArray();
-
-        /*_midiFile = MidiFile.Read(filePath);
-        TempoMap = _midiFile.GetTempoMap();
-        TimeSignature = TempoMap.GetTimeSignatureAtTime(new MidiTimeSpan());*/
-
-        /*//Strip out the notes from the midi file
-        foreach (var track in _midiFile.GetTrackChunks())
-        {
-            string trackName = track.Events.OfType<SequenceTrackNameEvent>().FirstOrDefault()?.Text;
-            MidiNoteInfo[] noteEvents = track
-                .GetNotes()
-                .Select(note => new MidiNoteInfo(note))
-                .ToArray();
-
-            switch (trackName)
-            {
-                case "Up":
-                    _upNotes = noteEvents;
-                    break;
-                case "Down":
-                    _downNotes = noteEvents;
-                    break;
-                case "Left":
-                    _leftNotes = noteEvents;
-                    break;
-                case "Right":
-                    _rightNotes = noteEvents;
-                    break;
-            }
-        }*/
     }
 
     /**
-     * <summary>Gets midiNoteInfo by lane. </summary>
+     * <summary>Gets NoteInfo by lane. </summary>
      */
     public NoteInfo[] GetNotes(ArrowType arrowType)
     {
@@ -91,39 +54,3 @@ public partial class MidiMaestro : Resource
         };
     }
 }
-
-/*//A facade to wrap the midi notes. This is a simple class that wraps a Note object from the DryWetMidi library.
-public class MidiNoteInfo
-{
-    private readonly Melanchall.DryWetMidi.Interaction.Note _note;
-
-    public MidiNoteInfo(Melanchall.DryWetMidi.Interaction.Note note)
-    {
-        _note = note;
-    }
-
-    public long GetStartTimeBeat()
-    {
-        var beatsBar = _note.TimeAs<BarBeatTicksTimeSpan>(MidiMaestro.TempoMap);
-        return beatsBar.Bars * MidiMaestro.TimeSignature.Numerator + beatsBar.Beats;
-    }
-
-    public long GetStartTimeTicks() => _note.Time;
-
-    public float GetStartTimeSeconds() =>
-        _note.TimeAs<MetricTimeSpan>(MidiMaestro.TempoMap).Milliseconds / 1000f
-        + _note.TimeAs<MetricTimeSpan>(MidiMaestro.TempoMap).Seconds;
-
-    public long GetEndTime() => _note.EndTime; //ticks
-
-    public long GetDuration() => _note.Length; //ticks
-
-    public long GetDurationBeats()
-    {
-        var beatsBar = TimeConverter.ConvertTo<BarBeatTicksTimeSpan>(
-            _note.Length,
-            MidiMaestro.TempoMap
-        );
-        return beatsBar.Bars * MidiMaestro.TimeSignature.Numerator + beatsBar.Beats;
-    }
-}*/
