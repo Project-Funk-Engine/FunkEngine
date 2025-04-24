@@ -29,6 +29,8 @@ public static class SaveSystem
     private const int DefaultInputControllerInventory = 4; //back button
     private const string DefaultLanguage = "en";
     private const bool DefaultHighCon = false;
+    private const string DefaultSavePath = "NewSong1";
+    private const string DefaultLoadPath = "Song1.tres";
 
     public enum ConfigSettings
     {
@@ -48,6 +50,8 @@ public static class SaveSystem
         InputControllerInventory,
         LanguageKey,
         HighContrast,
+        SavePath,
+        LoadPath,
     }
 
     /**
@@ -72,6 +76,8 @@ public static class SaveSystem
         UpdateConfig(ConfigSettings.InputControllerInventory, DefaultInputControllerInventory);
         UpdateConfig(ConfigSettings.LanguageKey, DefaultLanguage);
         UpdateConfig(ConfigSettings.HighContrast, DefaultHighCon);
+        UpdateConfig(ConfigSettings.SavePath, DefaultSavePath);
+        UpdateConfig(ConfigSettings.LoadPath, DefaultLoadPath);
     }
 
     private static void SaveConfig()
@@ -132,6 +138,12 @@ public static class SaveSystem
                 break;
             case ConfigSettings.HighContrast:
                 _curConfigData.SetValue("Options", "HighContrast", value);
+                break;
+            case ConfigSettings.SavePath:
+                _curConfigData.SetValue("Editor", "SavePath", value);
+                break;
+            case ConfigSettings.LoadPath:
+                _curConfigData.SetValue("Editor", "LoadPath", value);
                 break;
             default:
                 GD.PushError("SaveSystem.UpdateConfig: Invalid config setting passed. " + setting);
@@ -270,6 +282,10 @@ public static class SaveSystem
                 return _curConfigData.GetValue("Options", "LanguageKey", DefaultLanguage);
             case ConfigSettings.HighContrast:
                 return _curConfigData.GetValue("Options", "HighContrast", DefaultHighCon);
+            case ConfigSettings.SavePath:
+                return _curConfigData.GetValue("Editor", "SavePath", DefaultSavePath);
+            case ConfigSettings.LoadPath:
+                return _curConfigData.GetValue("Editor", "LoadPath", DefaultLoadPath);
             default:
                 GD.PushError("Invalid config setting passed. " + setting);
                 return float.MinValue;

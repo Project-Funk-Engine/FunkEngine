@@ -9,7 +9,8 @@ public partial class Conductor : Node
 {
     [Export]
     private ChartManager CM;
-    private MidiMaestro MM;
+
+    public MidiMaestro MM;
 
     private List<ArrowData> _noteData = new List<ArrowData>();
 
@@ -20,13 +21,14 @@ public partial class Conductor : Node
     public override void _Ready()
     {
         CM.ArrowFromInput += ReceiveNoteInput;
+        CM.ArrowSelected += RemoveArrow;
     }
 
     public void Initialize(SongData curSong)
     {
         _noteData = new List<ArrowData>();
 
-        MM = new MidiMaestro(BattleDirector.Config.CurSong.MIDILocation);
+        MM = new MidiMaestro(BattleDirector.ChartDir + BattleDirector.LoadChartPath);
 
         CM.Initialize(curSong);
 
@@ -57,12 +59,12 @@ public partial class Conductor : Node
         }
     }
 
-    public delegate void InputHandler(ArrowData data, double beatDif);
+    public delegate void InputHandler(ArrowData data);
     public event InputHandler NoteInputEvent;
 
     private void ReceiveNoteInput(ArrowData data)
     {
-        NoteInputEvent?.Invoke(data, GetTimingDif(data.Beat));
+        NoteInputEvent?.Invoke(data);
     }
     #endregion
 
@@ -110,11 +112,33 @@ public partial class Conductor : Node
         ); //Structs make me sad sometimes
     }
 
-    public void AddPlayerNote(ArrowType type, Beat beat)
+    private void RemoveArrow(NoteArrow arrow)
     {
-        int index = AddNoteData(type, beat); //Currently player notes aren't sorted correctly
+        MM.CurrentChart.RemoveNote(arrow.Type, (float)arrow.Beat.BeatPos);
+        int index = _noteData.FindIndex(data =>
+            data.Type == arrow.Type && Math.Abs(data.Beat.BeatPos - arrow.Beat.BeatPos) < 0.01
+        );
         if (index != -1)
+        {
+            _noteData.RemoveAt(index);
+        }
+        else
+        {
+            GD.PushError("Could not find arrow to remove " + arrow.Type + " " + arrow.Beat);
+        }
+
+        arrow.Visible = false;
+    }
+
+    public void AddPlayerNote(ArrowType type, Beat beat, double length = 0)
+    {
+        int index = AddNoteData(type, beat, length); //Currently player notes aren't sorted correctly
+        if (index != -1)
+        {
             SpawnNote(index, true);
+            MM.CurrentChart.AddNote(type, (float)beat.BeatPos, (float)length);
+            GD.Print("Adding note " + type + " " + (float)beat.BeatPos);
+        }
         else
             GD.PushError("Duplicate player note was attempted. (This should be stopped by CM)");
     }
@@ -123,13 +147,5 @@ public partial class Conductor : Node
     {
         Beat spawnBeat = beat + _beatSpawnOffset;
         SpawnNotesAtBeat(spawnBeat.RoundBeat());
-    }
-
-    private double GetTimingDif(Beat beat)
-    {
-        //Hmm, this is only ever an issue with possibly reaching beat 1 from just under beat 0, not sure if that'd happen
-        if (beat.Loop != TimeKeeper.LastBeat.Loop)
-            return 1;
-        return Math.Abs(beat.BeatPos - TimeKeeper.LastBeat.BeatPos);
     }
 }

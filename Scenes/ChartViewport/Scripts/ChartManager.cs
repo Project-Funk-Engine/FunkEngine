@@ -131,6 +131,7 @@ public partial class ChartManager : SubViewportContainer
         result.Missed += OnArrowMissed;
         result.QueueForHit += OnArrowHittable;
         result.QueueForPool += PoolArrow;
+        result.Selected += InvokeArrowSelected;
         _arrowGroup.AddChild(result);
         return result;
     }
@@ -166,6 +167,17 @@ public partial class ChartManager : SubViewportContainer
         else
             _arrowPool.Add(noteArrow);
     }
+    #endregion
+
+    #region For Charting
+    public delegate void ArrowSelectedEventHandler(NoteArrow arrow);
+    public event ArrowSelectedEventHandler ArrowSelected;
+
+    private void InvokeArrowSelected(NoteArrow arrow)
+    {
+        ArrowSelected?.Invoke(arrow);
+    }
+
     #endregion
 
     #region Input Handling

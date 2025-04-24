@@ -16,6 +16,9 @@ public partial class NoteArrow : Sprite2D
     [Export]
     public Sprite2D IconSprite;
 
+    [Export]
+    public Button Selector;
+
     public ArrowData Data;
     public Beat Beat => Data.Beat;
     public ArrowType Type => Data.Type;
@@ -27,6 +30,7 @@ public partial class NoteArrow : Sprite2D
     public override void _Ready()
     {
         ZIndex = 2;
+        Selector.Pressed += InvokeSelected;
     }
 
     public virtual void Init(CheckerData parentChecker, ArrowData arrowData, double beatTime)
@@ -46,6 +50,14 @@ public partial class NoteArrow : Sprite2D
             return;
         Modulate *= .7f;
         IsHit = true;
+    }
+
+    public delegate void SelectedEventHandler(NoteArrow noteArrow);
+    public event SelectedEventHandler Selected;
+
+    private void InvokeSelected()
+    {
+        Selected?.Invoke(this);
     }
 
     public delegate void HittableEventHandler(NoteArrow note);

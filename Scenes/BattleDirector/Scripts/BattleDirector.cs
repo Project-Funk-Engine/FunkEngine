@@ -26,41 +26,52 @@ public partial class BattleDirector : Node2D
     private Button _reinitButton; //Initial start button
 
     [Export]
-    private Button _playButton;
+    private Button _startButton;
 
-    private double _timingInterval = .1; //in beats, maybe make note/bpm dependent
+    [Export]
+    private Button _pauseButton;
 
-    public static SongTemplate Song = new SongTemplate(
+    [Export]
+    private Label _beatLabel;
+
+    [Export]
+    private Button _resumeButton;
+
+    [Export]
+    private Button _saveButton;
+
+    [Export]
+    private TextEdit _loadName;
+
+    [Export]
+    private TextEdit _saveName;
+
+    [Export]
+    private SpinBox _holdLength;
+
+    [Export]
+    private SpinBox _beatOffset;
+
+    public const string ChartDir = "Audio/Midi/";
+    public static string SaveChartPath;
+    public static string LoadChartPath;
+
+    public static SongTemplate Config = new SongTemplate(
         new SongData
         {
             Bpm = 120,
             SongLength = -1,
             NumLoops = 5,
-        },
-        "Song1",
-        "Audio/Song1.ogg",
-        "Audio/Midi/Song1.tres"
+        }
     );
-
-    public static BattleConfig Config;
-
-    public static BattleConfig MakeBattleConfig()
-    {
-        BattleConfig result = new BattleConfig { RoomType = Stages.Battle };
-        result.EnemyScenePath = Song.EnemyScenePath;
-        result.CurSong = Song;
-        return result;
-    }
-
     #endregion
 
     #region Initialization
     private void ResetEverything()
     {
         Audio.Stop();
-        Config = MakeBattleConfig();
-        SongData curSong = Config.CurSong.SongData;
-        Audio.SetStream(GD.Load<AudioStream>(Config.CurSong.AudioLocation));
+        SongData curSong = Config.SongData;
+        Audio.SetStream(GD.Load<AudioStream>("res://Audio/Song1.ogg"));
         if (curSong.SongLength <= 0)
         {
             curSong.SongLength = Audio.Stream.GetLength();
@@ -68,9 +79,10 @@ public partial class BattleDirector : Node2D
 
         TimeKeeper.InitVals(curSong.Bpm);
         CD.Initialize(curSong);
+        _startButton.Disabled = false;
     }
 
-    private void BeginPlayback()
+    private void StartPlayback()
     {
         if (Audio.IsPlaying())
             return;
@@ -78,8 +90,22 @@ public partial class BattleDirector : Node2D
         var timer = GetTree().CreateTimer(AudioServer.GetTimeToNextMix());
         timer.Timeout += () =>
         {
+            _startButton.Disabled = true;
             CM.BeginTweens();
             Audio.Play();
+        };
+    }
+
+    private void ResumePlayback()
+    {
+        if (!Audio.GetStreamPaused())
+            return;
+
+        var timer = GetTree().CreateTimer(AudioServer.GetTimeToNextMix());
+        timer.Timeout += () =>
+        {
+            CM.BeginTweens();
+            Audio.SetStreamPaused(false);
         };
     }
 
@@ -87,18 +113,72 @@ public partial class BattleDirector : Node2D
     {
         CD.NoteInputEvent += OnTimedInput;
 
-        ResetEverything();
+        _loadName.Text = (string)SaveSystem.GetConfigValue(SaveSystem.ConfigSettings.LoadPath);
+        _saveName.Text = (string)SaveSystem.GetConfigValue(SaveSystem.ConfigSettings.SavePath);
+
+        _saveName.TextChanged += SaveTextChanged;
+        _loadName.TextChanged += LoadTextChanged;
+
+        _reinitButton.Disabled = !ValidateLoadChart();
 
         _reinitButton.GrabFocus();
+        _pauseButton.Pressed += () => Audio.StreamPaused = true;
         _reinitButton.Pressed += ResetEverything;
-        _playButton.Pressed += BeginPlayback;
+        _startButton.Disabled = true;
+        _startButton.Pressed += StartPlayback;
+        _resumeButton.Pressed += ResumePlayback;
+        _saveButton.Pressed += SaveChart;
+    }
+
+    private void SaveChart()
+    {
+        CD.MM.CurrentChart.SaveChart(ChartDir + SaveChartPath);
     }
 
     public override void _Process(double delta)
     {
+        _saveButton.Disabled = CD.MM == null || CD.MM.CurrentChart == null;
+
         TimeKeeper.CurrentTime = Audio.GetPlaybackPosition();
         Beat realBeat = TimeKeeper.GetBeatFromTime(Audio.GetPlaybackPosition());
         UpdateBeat(realBeat);
+    }
+
+    private void SaveTextChanged()
+    {
+        SaveChartPath = _saveName.Text + ".tres";
+        SaveSystem.UpdateConfig(SaveSystem.ConfigSettings.SavePath, _saveName.Text);
+    }
+
+    private void LoadTextChanged()
+    {
+        _reinitButton.Disabled = !ValidateLoadChart();
+    }
+
+    private bool ValidateLoadChart()
+    {
+        LoadChartPath = _loadName.Text + ".tres";
+
+        if (!FileAccess.FileExists(ChartDir + LoadChartPath))
+            return false;
+        try //Can't be parsed.
+        {
+            NoteChart chart = ResourceLoader.Load<NoteChart>(
+                ChartDir + LoadChartPath,
+                null,
+                ResourceLoader.CacheMode.Ignore
+            );
+            chart.AddNote(ArrowType.Up, 0);
+        }
+        catch (Exception e)
+        {
+            GD.PushError(e);
+            Console.WriteLine(e);
+            return false;
+        }
+
+        SaveSystem.UpdateConfig(SaveSystem.ConfigSettings.LoadPath, _loadName.Text);
+        return true;
     }
 
     private void UpdateBeat(Beat beat)
@@ -108,6 +188,7 @@ public partial class BattleDirector : Node2D
         {
             CD.ProgressiveSpawnNotes(beat);
         }
+        _beatLabel.Text = beat.ToString();
         TimeKeeper.LastBeat = beat;
     }
     #endregion
@@ -115,12 +196,12 @@ public partial class BattleDirector : Node2D
     #region Input&Timing
     private bool PlayerAddNote(ArrowType type, Beat beat)
     {
-        CD.AddPlayerNote(type, beat);
+        CD.AddPlayerNote(type, beat + _beatOffset.Value, _holdLength.Value);
         return true;
     }
 
     //Only called from CD signal when a note is processed
-    private void OnTimedInput(ArrowData data, double beatDif)
+    private void OnTimedInput(ArrowData data)
     {
         if (data == ArrowData.Placeholder)
             return; //An inactive note was passed, for now do nothing, could force miss.

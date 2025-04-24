@@ -15,6 +15,8 @@ public partial class MidiMaestro : Resource
     private readonly NoteInfo[] _leftNotes;
     private readonly NoteInfo[] _rightNotes;
 
+    public NoteChart CurrentChart { get; private set; }
+
     //private MidiFile strippedSong;
     /**
      * <summary>Constructor loads midi file and populates lane note arrays with midiNoteInfo</summary>
@@ -32,11 +34,15 @@ public partial class MidiMaestro : Resource
             GD.PushError("ERROR: Unable to load level Midi file: " + filePath);
         }
 
-        NoteChart savedChart = ResourceLoader.Load<NoteChart>(filePath);
-        _upNotes = savedChart.GetLane(ArrowType.Up).ToArray();
-        _downNotes = savedChart.GetLane(ArrowType.Down).ToArray();
-        _leftNotes = savedChart.GetLane(ArrowType.Left).ToArray();
-        _rightNotes = savedChart.GetLane(ArrowType.Right).ToArray();
+        CurrentChart = ResourceLoader.Load<NoteChart>(
+            filePath,
+            null,
+            ResourceLoader.CacheMode.Replace
+        );
+        _upNotes = CurrentChart.GetLane(ArrowType.Up).ToArray();
+        _downNotes = CurrentChart.GetLane(ArrowType.Down).ToArray();
+        _leftNotes = CurrentChart.GetLane(ArrowType.Left).ToArray();
+        _rightNotes = CurrentChart.GetLane(ArrowType.Right).ToArray();
     }
 
     /**

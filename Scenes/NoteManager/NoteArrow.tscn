@@ -4,13 +4,23 @@
 [ext_resource type="Script" uid="uid://cfdthf532wby7" path="res://Scenes/NoteManager/Scripts/NoteArrow.cs" id="2_lbl4b"]
 [ext_resource type="Texture2D" uid="uid://cgq2ar3pdmkac" path="res://Scenes/NoteManager/Assets/Arrow_Outline.png" id="3_5g4ja"]
 
-[node name="Right-arrow" type="Sprite2D" node_paths=PackedStringArray("OutlineSprite", "IconSprite")]
+[node name="Right-arrow" type="Sprite2D" node_paths=PackedStringArray("OutlineSprite", "IconSprite", "Selector")]
 texture = ExtResource("1_wq1hy")
 script = ExtResource("2_lbl4b")
 OutlineSprite = NodePath("Outline")
 IconSprite = NodePath("Icon")
+Selector = NodePath("Button")
 
 [node name="Outline" type="Sprite2D" parent="."]
 texture = ExtResource("3_5g4ja")
 
 [node name="Icon" type="Sprite2D" parent="."]
+
+[node name="Button" type="Button" parent="."]
+self_modulate = Color(1, 1, 1, 0.337)
+offset_left = -18.0
+offset_top = -13.0
+offset_right = 18.0
+offset_bottom = 13.0
+theme_override_constants/outline_size = 5
+text = "rem"
