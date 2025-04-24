@@ -252,5 +252,35 @@ public partial class BattleDirector : Node2D
             return; //Exit handling for a placed note
         return;
     }
+
+    public override void _Input(InputEvent @event)
+    {
+        if (
+            @event.IsActionPressed("WASD_inventory")
+            || @event.IsActionPressed("CONTROLLER_inventory")
+        )
+        {
+            if (!_reinitButton.Disabled)
+                ResetEverything();
+        }
+
+        if (
+            @event.IsActionPressed("WASD_secondaryPlacement")
+            || @event.IsActionPressed("CONTROLLER_secondaryPlacement")
+        )
+        {
+            if (!_startButton.Disabled)
+                StartPlayback();
+            else if (Audio.GetStreamPaused())
+            {
+                ResumePlayback();
+            }
+            else
+            {
+                Audio.SetStreamPaused(true);
+            }
+        }
+    }
+
     #endregion
 }
