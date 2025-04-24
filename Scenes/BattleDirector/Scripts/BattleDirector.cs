@@ -1,9 +1,6 @@
 using System;
-using System.Linq;
 using FunkEngine;
-using FunkEngine.Classes.MidiMaestro;
 using Godot;
-using Melanchall.DryWetMidi.Interaction;
 
 /**<summary>BattleDirector: Higher priority director to manage battle effects. Can directly access managers, which should signal up to Director WIP</summary>
  */
@@ -170,7 +167,6 @@ public partial class BattleDirector : Node2D
         _resumeButton.Pressed += ResumePlayback;
         _saveButton.Pressed += SaveChart;
         _selectSongButton.Pressed += () => _fileDialog.PopupCentered();
-        ;
     }
 
     private void SaveChart()
@@ -247,72 +243,14 @@ public partial class BattleDirector : Node2D
     private void OnTimedInput(ArrowData data)
     {
         if (data == ArrowData.Placeholder)
-            return; //An inactive note was passed, for now do nothing, could force miss.
-        if (data.IsNull) //An empty beat
-        {
-            if ((int)data.Beat.BeatPos % (int)TimeKeeper.BeatsPerLoop == 0)
-                return; //We never ever try to place at 0
-            if (PlayerAddNote(data.Type, data.Beat))
-                return; //Exit handling for a placed note
             return;
-        }
+        if (!data.IsNull)
+            return;
+        if ((int)data.Beat.BeatPos % (int)TimeKeeper.BeatsPerLoop == 0)
+            return; //We never ever try to place at 0
+        if (PlayerAddNote(data.Type, data.Beat))
+            return; //Exit handling for a placed note
+        return;
     }
     #endregion
 }
-
-
-
-
-/*
-public partial class MapCreator : Node
-{
-    [Export]
-    public Button AudioSelectButton;
-
-    [Export]
-    public Label SelectedSongLabel;
-
-    [Export]
-    public RichTextLabel DetectedOnsetsLabel;
-
-    private FileDialog _fileDialog;
-
-    private AudioFileAnalyzer _audioFileAnalyzer;
-
-    public override void _Ready()
-    {
-        _audioFileAnalyzer = new AudioFileAnalyzer();
-
-        _fileDialog = new FileDialog();
-        _fileDialog.FileMode = FileDialog.FileModeEnum.OpenFile;
-        _fileDialog.Access = FileDialog.AccessEnum.Filesystem;
-        _fileDialog.UseNativeDialog = true;
-        _fileDialog.Filters = ["*.wav", "*.mp3"];
-        AddChild(_fileDialog);
-
-        _fileDialog.FileSelected += (filePath) =>
-        {
-            SelectedSongLabel.Text = "Selected Song: " + filePath;
-            ProcessSongFile(filePath);
-        };
-
-        AudioSelectButton.Pressed += () => _fileDialog.PopupCentered();
-    }
-
-    private void ProcessSongFile(string filePath)
-    {
-        _audioFileAnalyzer.LoadAudioFromFile(filePath);
-        if (_audioFileAnalyzer.PCMStream != null)
-        {
-            _audioFileAnalyzer.DetectOnsets();
-            var onsets = _audioFileAnalyzer.OnsetsFound;
-            DetectedOnsetsLabel.Text = "Detected Onsets: " + string.Join(", ", onsets);
-        }
-        else
-        {
-            DetectedOnsetsLabel.Text = "Failed to load audio file.";
-        }
-    }
-}
-
- */

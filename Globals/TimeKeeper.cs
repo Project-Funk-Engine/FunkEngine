@@ -40,11 +40,6 @@ public partial class TimeKeeper : Node
         return beat.GetBeatInSong() / BeatsPerSong * SongLength;
     }
 
-    public static double GetPosOfBeat(Beat beat)
-    {
-        return beat.GetBeatInSong() / BeatsPerSong * (ChartWidth * LoopsPerSong);
-    }
-
     public static double PosMod(double i, double mod)
     {
         return (i % mod + mod) % mod;

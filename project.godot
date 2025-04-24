@@ -14,7 +14,7 @@ config/name="ProjectFunkEngine"
 config/tags=PackedStringArray("cool")
 run/main_scene="uid://b0mrgr7h0ty1y"
 config/features=PackedStringArray("4.4", "C#", "Forward Plus")
-config/icon="res://SharedAssets/Character1.png"
+config/icon="uid://xtygvpk7s8e4"
 
 [audio]
 
