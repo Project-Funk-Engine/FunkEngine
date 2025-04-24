@@ -30,7 +30,7 @@ public static class SaveSystem
     private const string DefaultLanguage = "en";
     private const bool DefaultHighCon = false;
     private const string DefaultSavePath = "NewSong1";
-    private const string DefaultLoadPath = "Song1.tres";
+    private const string DefaultLoadPath = "Song1";
 
     public enum ConfigSettings
     {

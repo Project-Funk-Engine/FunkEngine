@@ -151,7 +151,7 @@ public partial class BattleDirector : Node2D
 
         _loadName.Text = (string)SaveSystem.GetConfigValue(SaveSystem.ConfigSettings.LoadPath);
         _saveName.Text = (string)SaveSystem.GetConfigValue(SaveSystem.ConfigSettings.SavePath);
-        SaveChartPath = _saveName.Text;
+        SaveChartPath = _saveName.Text + ".tres";
         LoadChartPath = _loadName.Text;
 
         _saveName.TextChanged += SaveTextChanged;
