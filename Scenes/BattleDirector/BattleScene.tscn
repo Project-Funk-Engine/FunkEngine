@@ -8,7 +8,7 @@
 [ext_resource type="Texture2D" uid="uid://dbjotl0v1ymia" path="res://SharedAssets/BattleFrame1.png" id="7_klvil"]
 [ext_resource type="Theme" uid="uid://d37e3tpsbxwak" path="res://Scenes/UI/Assets/GeneralTheme.tres" id="8_62qim"]
 
-[node name="ProtoBattleDirector" type="Node2D" node_paths=PackedStringArray("CD", "CM", "Audio", "_reinitButton", "_startButton", "_pauseButton", "_beatLabel", "_resumeButton", "_saveButton", "_loadName", "_saveName", "_holdLength", "_beatOffset")]
+[node name="ProtoBattleDirector" type="Node2D" node_paths=PackedStringArray("CD", "CM", "Audio", "_reinitButton", "_startButton", "_pauseButton", "_beatLabel", "_resumeButton", "_saveButton", "_loadName", "_saveName", "_holdLength", "_beatOffset", "_bpmSelector", "_loopsSelector", "_selectSongButton", "_selectSongLabel")]
 process_mode = 1
 script = ExtResource("1_jmdo1")
 CD = NodePath("Conductor")
@@ -24,6 +24,10 @@ _loadName = NodePath("LoadLabel/LoadName")
 _saveName = NodePath("SaveLabel/SaveName")
 _holdLength = NodePath("Length/Length")
 _beatOffset = NodePath("Offset/PlacementOffset")
+_bpmSelector = NodePath("BPM/BPM")
+_loopsSelector = NodePath("Loops/NumLoops")
+_selectSongButton = NodePath("Buttons/SelectSongButton")
+_selectSongLabel = NodePath("Buttons/SelectSongButton/SongPathLabel")
 metadata/_edit_lock_ = true
 
 [node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
@@ -68,6 +72,7 @@ offset_right = 627.0
 offset_bottom = 47.0
 tooltip_text = "Reloads the entire track to the Load Chart. Note: THIS DOES NOT SAVE PROGRESS."
 theme = ExtResource("8_62qim")
+disabled = true
 text = "RELOAD
 "
 
@@ -112,11 +117,29 @@ tooltip_text = "Saves the current work to the file with the name Save Chart. Fil
 theme = ExtResource("8_62qim")
 text = "Save"
 
+[node name="SelectSongButton" type="Button" parent="Buttons"]
+layout_mode = 0
+offset_left = 244.0
+offset_top = 21.0
+offset_right = 366.0
+offset_bottom = 58.0
+theme = ExtResource("8_62qim")
+text = "Select Song File"
+
+[node name="SongPathLabel" type="Label" parent="Buttons/SelectSongButton"]
+layout_mode = 0
+offset_left = 4.0
+offset_top = 35.0
+offset_right = 257.0
+offset_bottom = 76.0
+text = "Song File: "
+autowrap_mode = 2
+
 [node name="BeatLabel" type="Label" parent="."]
-offset_left = 306.0
-offset_top = 11.0
-offset_right = 400.0
-offset_bottom = 23.0
+offset_left = 252.0
+offset_top = 5.0
+offset_right = 346.0
+offset_bottom = 17.0
 text = "Beat: 0 Loop:0"
 
 [node name="LoadLabel" type="Label" parent="."]
@@ -187,3 +210,38 @@ offset_bottom = 15.0
 tooltip_text = "The offset from the exact beat."
 max_value = 0.9
 step = 0.1
+
+[node name="BPM" type="Label" parent="."]
+offset_left = 313.0
+offset_top = 120.0
+offset_right = 359.0
+offset_bottom = 132.0
+text = "BPM:"
+
+[node name="BPM" type="SpinBox" parent="BPM"]
+layout_mode = 0
+offset_left = 48.0
+offset_top = -5.0
+offset_right = 122.0
+offset_bottom = 15.0
+min_value = 30.0
+max_value = 300.0
+value = 120.0
+
+[node name="Loops" type="Label" parent="."]
+offset_left = 128.0
+offset_top = 111.0
+offset_right = 189.0
+offset_bottom = 138.0
+text = "Loops
+Per Song:"
+
+[node name="NumLoops" type="SpinBox" parent="Loops"]
+layout_mode = 0
+offset_left = 65.0
+offset_top = 7.0
+offset_right = 139.0
+offset_bottom = 27.0
+min_value = 1.0
+max_value = 7.0
+value = 5.0

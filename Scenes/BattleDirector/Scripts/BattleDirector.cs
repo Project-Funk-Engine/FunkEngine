@@ -23,7 +23,7 @@ public partial class BattleDirector : Node2D
     private AudioStreamPlayer Audio;
 
     [Export]
-    private Button _reinitButton; //Initial start button
+    private Button _reinitButton;
 
     [Export]
     private Button _startButton;
@@ -52,26 +52,49 @@ public partial class BattleDirector : Node2D
     [Export]
     private SpinBox _beatOffset;
 
+    [Export]
+    private SpinBox _bpmSelector;
+
+    [Export]
+    private SpinBox _loopsSelector;
+
+    [Export]
+    private Button _selectSongButton;
+
+    [Export]
+    private Label _selectSongLabel;
+
+    public static string SongPath = String.Empty;
     public const string ChartDir = "Audio/Midi/";
     public static string SaveChartPath;
     public static string LoadChartPath;
 
-    public static SongTemplate Config = new SongTemplate(
-        new SongData
-        {
-            Bpm = 120,
-            SongLength = -1,
-            NumLoops = 5,
-        }
-    );
+    public static SongData Config = new SongData
+    {
+        Bpm = 120,
+        SongLength = -1,
+        NumLoops = 5,
+    };
     #endregion
 
     #region Initialization
     private void ResetEverything()
     {
+        if (string.IsNullOrEmpty(SongPath))
+        {
+            _selectSongLabel.Text = "Cannot start without a song selected!";
+            return;
+        }
+        Config = new SongData
+        {
+            Bpm = (int)_bpmSelector.Value,
+            SongLength = -1,
+            NumLoops = (int)_loopsSelector.Value,
+        };
+
         Audio.Stop();
-        SongData curSong = Config.SongData;
-        Audio.SetStream(GD.Load<AudioStream>("res://Audio/Song1.ogg"));
+        SongData curSong = Config;
+        Audio.SetStream(GD.Load<AudioStream>(SongPath));
         if (curSong.SongLength <= 0)
         {
             curSong.SongLength = Audio.Stream.GetLength();
@@ -109,12 +132,30 @@ public partial class BattleDirector : Node2D
         };
     }
 
+    private FileDialog _fileDialog;
+
     public override void _Ready()
     {
+        _fileDialog = new FileDialog();
+        _fileDialog.FileMode = FileDialog.FileModeEnum.OpenFile;
+        _fileDialog.Access = FileDialog.AccessEnum.Filesystem;
+        _fileDialog.UseNativeDialog = true;
+        _fileDialog.Filters = ["*.ogg", "*.wav"];
+        AddChild(_fileDialog);
+
+        _fileDialog.FileSelected += (filePath) =>
+        {
+            SongPath = filePath;
+            _selectSongLabel.Text = "Current Song: " + SongPath;
+            _reinitButton.Disabled = !ValidateLoadChart();
+        };
+
         CD.NoteInputEvent += OnTimedInput;
 
         _loadName.Text = (string)SaveSystem.GetConfigValue(SaveSystem.ConfigSettings.LoadPath);
         _saveName.Text = (string)SaveSystem.GetConfigValue(SaveSystem.ConfigSettings.SavePath);
+        SaveChartPath = _saveName.Text;
+        LoadChartPath = _loadName.Text;
 
         _saveName.TextChanged += SaveTextChanged;
         _loadName.TextChanged += LoadTextChanged;
@@ -128,6 +169,8 @@ public partial class BattleDirector : Node2D
         _startButton.Pressed += StartPlayback;
         _resumeButton.Pressed += ResumePlayback;
         _saveButton.Pressed += SaveChart;
+        _selectSongButton.Pressed += () => _fileDialog.PopupCentered();
+        ;
     }
 
     private void SaveChart()
@@ -137,7 +180,7 @@ public partial class BattleDirector : Node2D
 
     public override void _Process(double delta)
     {
-        _saveButton.Disabled = CD.MM == null || CD.MM.CurrentChart == null;
+        _saveButton.Disabled = (CD.MM == null || CD.MM.CurrentChart == null);
 
         TimeKeeper.CurrentTime = Audio.GetPlaybackPosition();
         Beat realBeat = TimeKeeper.GetBeatFromTime(Audio.GetPlaybackPosition());
@@ -216,3 +259,60 @@ public partial class BattleDirector : Node2D
     }
     #endregion
 }
+
+
+
+
+/*
+public partial class MapCreator : Node
+{
+    [Export]
+    public Button AudioSelectButton;
+
+    [Export]
+    public Label SelectedSongLabel;
+
+    [Export]
+    public RichTextLabel DetectedOnsetsLabel;
+
+    private FileDialog _fileDialog;
+
+    private AudioFileAnalyzer _audioFileAnalyzer;
+
+    public override void _Ready()
+    {
+        _audioFileAnalyzer = new AudioFileAnalyzer();
+
+        _fileDialog = new FileDialog();
+        _fileDialog.FileMode = FileDialog.FileModeEnum.OpenFile;
+        _fileDialog.Access = FileDialog.AccessEnum.Filesystem;
+        _fileDialog.UseNativeDialog = true;
+        _fileDialog.Filters = ["*.wav", "*.mp3"];
+        AddChild(_fileDialog);
+
+        _fileDialog.FileSelected += (filePath) =>
+        {
+            SelectedSongLabel.Text = "Selected Song: " + filePath;
+            ProcessSongFile(filePath);
+        };
+
+        AudioSelectButton.Pressed += () => _fileDialog.PopupCentered();
+    }
+
+    private void ProcessSongFile(string filePath)
+    {
+        _audioFileAnalyzer.LoadAudioFromFile(filePath);
+        if (_audioFileAnalyzer.PCMStream != null)
+        {
+            _audioFileAnalyzer.DetectOnsets();
+            var onsets = _audioFileAnalyzer.OnsetsFound;
+            DetectedOnsetsLabel.Text = "Detected Onsets: " + string.Join(", ", onsets);
+        }
+        else
+        {
+            DetectedOnsetsLabel.Text = "Failed to load audio file.";
+        }
+    }
+}
+
+ */
