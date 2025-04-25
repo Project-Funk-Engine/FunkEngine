@@ -30,9 +30,9 @@ public partial class TimeKeeper : Node
     public static Beat GetBeatFromTime(double timeSecs)
     {
         double beatPos = timeSecs / (60 / (double)Bpm);
-        Beat result = new Beat(beatPos, LastBeat.Loop);
+        Beat result = new Beat(beatPos);
         //If beatPos has returned to effectively < last beat pos, a loop has happened. IDK if there's a better way to handle this
-        return result.BeatPos < LastBeat.BeatPos ? result.IncDecLoop(1) : result;
+        return result;
     }
 
     public static double GetTimeOfBeat(Beat beat)

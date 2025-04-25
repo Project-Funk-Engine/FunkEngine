@@ -7,8 +7,8 @@ using Godot;
 public partial class NoteArrow : Sprite2D
 { //TextRect caused issues later :)
     public static readonly string LoadPath = "res://Scenes/NoteManager/NoteArrow.tscn";
-    protected const float LeftBound = -200f;
-    protected static readonly Beat BeatBound = new Beat(8);
+    protected const float LeftBound = -1000f;
+    protected static readonly Beat BeatBound = new Beat(60);
 
     [Export]
     public Sprite2D OutlineSprite;
@@ -86,7 +86,7 @@ public partial class NoteArrow : Sprite2D
     public delegate void KillEventHandler(NoteArrow note);
     public event KillEventHandler QueueForPool;
 
-    protected void RaiseKill(NoteArrow note) => QueueForPool?.Invoke(note);
+    public void RaiseKill(NoteArrow note) => QueueForPool?.Invoke(note);
 
     public virtual void Recycle()
     {
@@ -145,6 +145,6 @@ public partial class NoteArrow : Sprite2D
     //Is the passed in beat within range of this arrow's beat, for checking if player can place near this note
     public virtual bool IsInRange(Beat incomingBeat)
     {
-        return (int)Math.Round(Beat.BeatPos) == (int)Math.Round(incomingBeat.BeatPos);
+        return Beat.BeatPos - incomingBeat.BeatPos < 0.1f;
     }
 }

@@ -95,8 +95,12 @@ public partial class ChartManager : SubViewportContainer
         arrowTween.SetLoops().Play();
     }
 
+    const int HowManyArrowsBeforeItLags = 100;
+
     private void TweenArrows(Vector2 scale)
     {
+        if (_arrowGroup.GetChildren().Count > HowManyArrowsBeforeItLags)
+            return;
         foreach (var node in _arrowGroup.GetChildren())
         {
             NoteArrow arrow = (NoteArrow)node;
@@ -229,7 +233,7 @@ public partial class ChartManager : SubViewportContainer
     private ArrowData GetArrowFromInput(ArrowType type)
     {
         ArrowData placeable = new ArrowData(type, TimeKeeper.LastBeat.RoundBeat(), true);
-
+        GD.Print("Queued arrows: " + _queuedArrows[(int)type].Count);
         if (_queuedArrows[(int)type].Count == 0)
             return placeable; //Empty return null, place note action
 

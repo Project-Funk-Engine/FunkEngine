@@ -28,7 +28,7 @@ public partial class Conductor : Node
     {
         _noteData = new List<ArrowData>();
 
-        MM = new MidiMaestro(BattleDirector.ChartDir + BattleDirector.LoadChartPath);
+        MM = new MidiMaestro(Composer.ChartDir + Composer.LoadChartPath);
 
         CM.Initialize(curSong);
 
@@ -64,6 +64,7 @@ public partial class Conductor : Node
 
     private void ReceiveNoteInput(ArrowData data)
     {
+        GD.Print(data.ToString());
         NoteInputEvent?.Invoke(data);
     }
     #endregion
@@ -126,8 +127,8 @@ public partial class Conductor : Node
         {
             GD.PushError("Could not find arrow to remove " + arrow.Type + " " + arrow.Beat);
         }
-
         arrow.Visible = false;
+        arrow.RaiseKill(arrow);
     }
 
     public void AddPlayerNote(ArrowType type, Beat beat, double length = 0)

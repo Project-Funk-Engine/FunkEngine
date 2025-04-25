@@ -45,6 +45,9 @@ public struct ArrowData : IEquatable<ArrowData>, IComparable<ArrowData>
     public readonly ArrowType Type;
     public bool IsNull;
 
+    public override string ToString() =>
+        $"ArrowData: Dir: {Type} - {Beat} - Length: {Length} - Null: {IsNull}";
+
     public static ArrowData Placeholder { get; private set; } = new(default, default, true);
 
     public ArrowData BeatFromLength()
@@ -117,7 +120,7 @@ public struct Beat : IEquatable<Beat>, IComparable<Beat>
 
     public double GetBeatInSong()
     {
-        return BeatPos + Loop * TimeKeeper.BeatsPerLoop % TimeKeeper.BeatsPerSong;
+        return (BeatPos + Loop * TimeKeeper.BeatsPerLoop) % TimeKeeper.BeatsPerSong;
     }
 
     public Beat IncDecLoop(int amount)
@@ -134,7 +137,7 @@ public struct Beat : IEquatable<Beat>, IComparable<Beat>
 
     public override string ToString()
     {
-        return $"Beat: {BeatPos}, Loop: {Loop}";
+        return $"Beat: {BeatPos:0.0000}, Loop: {Loop}";
     }
 
     public static bool operator >(Beat beat1, Beat beat2)

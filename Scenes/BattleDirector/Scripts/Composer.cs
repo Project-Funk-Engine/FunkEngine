@@ -4,7 +4,7 @@ using Godot;
 
 /**<summary>BattleDirector: Higher priority director to manage battle effects. Can directly access managers, which should signal up to Director WIP</summary>
  */
-public partial class BattleDirector : Node2D
+public partial class Composer : Node2D
 {
     #region Declarations
 
@@ -61,8 +61,13 @@ public partial class BattleDirector : Node2D
     [Export]
     private Label _selectSongLabel;
 
+    [Export] private Button _forwardButton;
+    [Export] private Button _rewindButton;
+    [Export] private SpinBox _jumpSelector;
+    [Export] private Button _snapButton;
+
     public static string SongPath = String.Empty;
-    public const string ChartDir = "Audio/Midi/";
+    public const string ChartDir = "Edits/";
     public static string SaveChartPath;
     public static string LoadChartPath;
 
@@ -75,6 +80,70 @@ public partial class BattleDirector : Node2D
     #endregion
 
     #region Initialization
+    
+    private FileDialog _fileDialog;
+
+    public override void _Ready()
+    {
+        _fileDialog = new FileDialog();
+        _fileDialog.FileMode = FileDialog.FileModeEnum.OpenFile;
+        _fileDialog.Access = FileDialog.AccessEnum.Filesystem;
+        _fileDialog.UseNativeDialog = true;
+        _fileDialog.Filters = ["*.ogg", "*.wav"];
+        AddChild(_fileDialog);
+
+        _fileDialog.FileSelected += (filePath) =>
+        {
+            SongPath = filePath;
+            _selectSongLabel.Text = "Current Song: " + SongPath.GetFile();
+            _reinitButton.Disabled = !ValidateLoadChart();
+        };
+
+        CD.NoteInputEvent += OnTimedInput;
+
+        _loadName.Text = (string)SaveSystem.GetConfigValue(SaveSystem.ConfigSettings.LoadPath);
+        _saveName.Text = (string)SaveSystem.GetConfigValue(SaveSystem.ConfigSettings.SavePath);
+        SaveChartPath = _saveName.Text + ".tres";
+        LoadChartPath = _loadName.Text;
+
+        _saveName.TextChanged += SaveTextChanged;
+        _loadName.TextChanged += LoadTextChanged;
+
+        _reinitButton.Disabled = !ValidateLoadChart();
+
+        _reinitButton.GrabFocus();
+        _pauseButton.Pressed += () => Audio.StreamPaused = true;
+        _reinitButton.Pressed += ResetEverything;
+        _startButton.Disabled = true;
+        _startButton.Pressed += StartPlayback;
+        _resumeButton.Pressed += ResumePlayback;
+        _saveButton.Pressed += SaveChart;
+        _selectSongButton.Pressed += () => _fileDialog.PopupCentered();
+        _forwardButton.Pressed += JumpForward;
+        _rewindButton.Pressed += JumpBackwards;
+        _snapButton.Pressed += SnapToBeat;
+    }
+    
+    public override void _Process(double delta)
+    {
+        _saveButton.Disabled = (CD.MM == null || CD.MM.CurrentChart == null);
+
+        TimeKeeper.CurrentTime = Audio.GetPlaybackPosition();
+        Beat realBeat = TimeKeeper.GetBeatFromTime(Audio.GetPlaybackPosition());
+        UpdateBeat(realBeat);
+    }
+    
+    private void UpdateBeat(Beat beat)
+    {
+        //Still iffy, but approximately once per beat check, happens at start of new beat
+        if (Math.Floor(beat.BeatPos) >= Math.Floor((TimeKeeper.LastBeat + 1).BeatPos))
+        {
+            CD.ProgressiveSpawnNotes(beat);
+        }
+        _beatLabel.Text = beat.ToString();
+        TimeKeeper.LastBeat = beat;
+    }
+    
     private void ResetEverything()
     {
         if (string.IsNullOrEmpty(SongPath))
@@ -100,6 +169,48 @@ public partial class BattleDirector : Node2D
         TimeKeeper.InitVals(curSong.Bpm);
         CD.Initialize(curSong);
         _startButton.Disabled = false;
+    }
+
+    private void JumpForward()
+    {
+        bool wasPaused = Audio.StreamPaused;
+        
+        Audio.SetStreamPaused(false);
+        
+        float pos = (float)(Audio.GetPlaybackPosition() + TimeKeeper.GetTimeOfBeat(new Beat(_jumpSelector.Value)));
+        if (pos < Audio.Stream.GetLength())
+        {
+            Audio.Seek(pos);
+        }
+        Audio.SetStreamPaused(wasPaused);
+    }
+    
+    private void JumpBackwards()
+    {
+        bool wasPaused = Audio.StreamPaused;
+        
+        Audio.SetStreamPaused(false);
+        
+        float pos = (float)(Audio.GetPlaybackPosition() - TimeKeeper.GetTimeOfBeat(new Beat(_jumpSelector.Value)));
+        if (pos > 0)
+        {
+            Audio.Seek(pos);
+        }
+        Audio.SetStreamPaused(wasPaused);
+    }
+    
+    private void SnapToBeat()
+    {
+        bool wasPaused = Audio.StreamPaused;
+        
+        Audio.SetStreamPaused(false);
+        
+        float pos = (float)TimeKeeper.GetTimeOfBeat(new Beat(Math.Round(TimeKeeper.LastBeat.BeatPos)));
+        if (pos > 0 && pos < Audio.Stream.GetLength())
+        {
+            Audio.Seek(pos);
+        }
+        Audio.SetStreamPaused(wasPaused);
     }
 
     private void StartPlayback()
@@ -129,58 +240,9 @@ public partial class BattleDirector : Node2D
         };
     }
 
-    private FileDialog _fileDialog;
-
-    public override void _Ready()
-    {
-        _fileDialog = new FileDialog();
-        _fileDialog.FileMode = FileDialog.FileModeEnum.OpenFile;
-        _fileDialog.Access = FileDialog.AccessEnum.Filesystem;
-        _fileDialog.UseNativeDialog = true;
-        _fileDialog.Filters = ["*.ogg", "*.wav"];
-        AddChild(_fileDialog);
-
-        _fileDialog.FileSelected += (filePath) =>
-        {
-            SongPath = filePath;
-            _selectSongLabel.Text = "Current Song: " + SongPath;
-            _reinitButton.Disabled = !ValidateLoadChart();
-        };
-
-        CD.NoteInputEvent += OnTimedInput;
-
-        _loadName.Text = (string)SaveSystem.GetConfigValue(SaveSystem.ConfigSettings.LoadPath);
-        _saveName.Text = (string)SaveSystem.GetConfigValue(SaveSystem.ConfigSettings.SavePath);
-        SaveChartPath = _saveName.Text + ".tres";
-        LoadChartPath = _loadName.Text;
-
-        _saveName.TextChanged += SaveTextChanged;
-        _loadName.TextChanged += LoadTextChanged;
-
-        _reinitButton.Disabled = !ValidateLoadChart();
-
-        _reinitButton.GrabFocus();
-        _pauseButton.Pressed += () => Audio.StreamPaused = true;
-        _reinitButton.Pressed += ResetEverything;
-        _startButton.Disabled = true;
-        _startButton.Pressed += StartPlayback;
-        _resumeButton.Pressed += ResumePlayback;
-        _saveButton.Pressed += SaveChart;
-        _selectSongButton.Pressed += () => _fileDialog.PopupCentered();
-    }
-
     private void SaveChart()
     {
         CD.MM.CurrentChart.SaveChart(ChartDir + SaveChartPath);
-    }
-
-    public override void _Process(double delta)
-    {
-        _saveButton.Disabled = (CD.MM == null || CD.MM.CurrentChart == null);
-
-        TimeKeeper.CurrentTime = Audio.GetPlaybackPosition();
-        Beat realBeat = TimeKeeper.GetBeatFromTime(Audio.GetPlaybackPosition());
-        UpdateBeat(realBeat);
     }
 
     private void SaveTextChanged()
@@ -194,6 +256,10 @@ public partial class BattleDirector : Node2D
         _reinitButton.Disabled = !ValidateLoadChart();
     }
 
+    /// <summary>
+    /// Validate that the load path points to a valid chart resource.
+    /// </summary>
+    /// <returns>True if a resource could be loaded at the load path.</returns>
     private bool ValidateLoadChart()
     {
         LoadChartPath = _loadName.Text + ".tres";
@@ -219,17 +285,6 @@ public partial class BattleDirector : Node2D
         SaveSystem.UpdateConfig(SaveSystem.ConfigSettings.LoadPath, _loadName.Text);
         return true;
     }
-
-    private void UpdateBeat(Beat beat)
-    {
-        //Still iffy, but approximately once per beat check, happens at start of new beat
-        if (Math.Floor(beat.BeatPos) >= Math.Floor((TimeKeeper.LastBeat + 1).BeatPos))
-        {
-            CD.ProgressiveSpawnNotes(beat);
-        }
-        _beatLabel.Text = beat.ToString();
-        TimeKeeper.LastBeat = beat;
-    }
     #endregion
 
     #region Input&Timing
@@ -248,9 +303,7 @@ public partial class BattleDirector : Node2D
             return;
         if ((int)data.Beat.BeatPos % (int)TimeKeeper.BeatsPerLoop == 0)
             return; //We never ever try to place at 0
-        if (PlayerAddNote(data.Type, data.Beat))
-            return; //Exit handling for a placed note
-        return;
+        PlayerAddNote(data.Type, data.Beat);
     }
 
     public override void _Input(InputEvent @event)
