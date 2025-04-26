@@ -18,7 +18,7 @@ public partial class MenuModule : CanvasLayer, IFocusableMenu
             if (!connected)
                 OpenPauseMenu(); //Pause on disconnection
         };
-        GetTree().GetRoot().FocusExited += OpenPauseMenu;
+        //GetTree().GetRoot().FocusExited += OpenPauseMenu;
     }
 
     public void ResumeFocus()

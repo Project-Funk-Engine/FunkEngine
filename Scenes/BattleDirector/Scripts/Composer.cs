@@ -49,6 +49,8 @@ public partial class Composer : Node2D
     [Export]
     private SpinBox _beatOffset;
 
+    public static SpinBox BeatOffset;
+
     [Export]
     private SpinBox _bpmSelector;
 
@@ -61,10 +63,17 @@ public partial class Composer : Node2D
     [Export]
     private Label _selectSongLabel;
 
-    [Export] private Button _forwardButton;
-    [Export] private Button _rewindButton;
-    [Export] private SpinBox _jumpSelector;
-    [Export] private Button _snapButton;
+    [Export]
+    private Button _forwardButton;
+
+    [Export]
+    private Button _rewindButton;
+
+    [Export]
+    private SpinBox _jumpSelector;
+
+    [Export]
+    private Button _snapButton;
 
     public static string SongPath = String.Empty;
     public const string ChartDir = "Edits/";
@@ -80,7 +89,7 @@ public partial class Composer : Node2D
     #endregion
 
     #region Initialization
-    
+
     private FileDialog _fileDialog;
 
     public override void _Ready()
@@ -106,6 +115,8 @@ public partial class Composer : Node2D
         SaveChartPath = _saveName.Text + ".tres";
         LoadChartPath = _loadName.Text;
 
+        BeatOffset = _beatOffset;
+
         _saveName.TextChanged += SaveTextChanged;
         _loadName.TextChanged += LoadTextChanged;
 
@@ -123,7 +134,7 @@ public partial class Composer : Node2D
         _rewindButton.Pressed += JumpBackwards;
         _snapButton.Pressed += SnapToBeat;
     }
-    
+
     public override void _Process(double delta)
     {
         _saveButton.Disabled = (CD.MM == null || CD.MM.CurrentChart == null);
@@ -132,7 +143,7 @@ public partial class Composer : Node2D
         Beat realBeat = TimeKeeper.GetBeatFromTime(Audio.GetPlaybackPosition());
         UpdateBeat(realBeat);
     }
-    
+
     private void UpdateBeat(Beat beat)
     {
         //Still iffy, but approximately once per beat check, happens at start of new beat
@@ -143,7 +154,7 @@ public partial class Composer : Node2D
         _beatLabel.Text = beat.ToString();
         TimeKeeper.LastBeat = beat;
     }
-    
+
     private void ResetEverything()
     {
         if (string.IsNullOrEmpty(SongPath))
@@ -174,38 +185,43 @@ public partial class Composer : Node2D
     private void JumpForward()
     {
         bool wasPaused = Audio.StreamPaused;
-        
+
         Audio.SetStreamPaused(false);
-        
-        float pos = (float)(Audio.GetPlaybackPosition() + TimeKeeper.GetTimeOfBeat(new Beat(_jumpSelector.Value)));
+
+        float pos = (float)(
+            Audio.GetPlaybackPosition() + TimeKeeper.GetTimeOfBeat(new Beat(_jumpSelector.Value))
+        );
         if (pos < Audio.Stream.GetLength())
         {
             Audio.Seek(pos);
         }
         Audio.SetStreamPaused(wasPaused);
     }
-    
+
     private void JumpBackwards()
     {
         bool wasPaused = Audio.StreamPaused;
-        
+
         Audio.SetStreamPaused(false);
-        
-        float pos = (float)(Audio.GetPlaybackPosition() - TimeKeeper.GetTimeOfBeat(new Beat(_jumpSelector.Value)));
+
+        float pos = (float)(
+            Audio.GetPlaybackPosition() - TimeKeeper.GetTimeOfBeat(new Beat(_jumpSelector.Value))
+        );
         if (pos > 0)
         {
             Audio.Seek(pos);
         }
         Audio.SetStreamPaused(wasPaused);
     }
-    
+
     private void SnapToBeat()
     {
         bool wasPaused = Audio.StreamPaused;
-        
+
         Audio.SetStreamPaused(false);
-        
-        float pos = (float)TimeKeeper.GetTimeOfBeat(new Beat(Math.Round(TimeKeeper.LastBeat.BeatPos)));
+
+        float pos = (float)
+            TimeKeeper.GetTimeOfBeat(new Beat(Math.Round(TimeKeeper.LastBeat.BeatPos)));
         if (pos > 0 && pos < Audio.Stream.GetLength())
         {
             Audio.Seek(pos);

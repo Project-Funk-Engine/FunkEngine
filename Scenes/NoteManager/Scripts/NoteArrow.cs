@@ -145,6 +145,8 @@ public partial class NoteArrow : Sprite2D
     //Is the passed in beat within range of this arrow's beat, for checking if player can place near this note
     public virtual bool IsInRange(Beat incomingBeat)
     {
-        return Beat.BeatPos - incomingBeat.BeatPos < 0.1f;
+        int curBeatPos = (int)(Beat.BeatPos * 10);
+        int incBeatPos = (int)((incomingBeat.BeatPos + Composer.BeatOffset.Value) * 10);
+        return Math.Abs(curBeatPos - incBeatPos) < 1;
     }
 }
