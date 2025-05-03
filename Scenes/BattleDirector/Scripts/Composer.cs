@@ -180,6 +180,12 @@ public partial class Composer : Node2D
         TimeKeeper.InitVals(curSong.Bpm);
         CD.Initialize(curSong);
         _startButton.Disabled = false;
+        GD.Print(
+            "Beats per loop: "
+                + TimeKeeper.BeatsPerLoop
+                + "Beats per song: "
+                + TimeKeeper.BeatsPerSong
+        );
     }
 
     private void JumpForward()
@@ -220,8 +226,10 @@ public partial class Composer : Node2D
 
         Audio.SetStreamPaused(false);
 
-        float pos = (float)
-            TimeKeeper.GetTimeOfBeat(new Beat(Math.Round(TimeKeeper.LastBeat.BeatPos)));
+        Beat snapBeat = new Beat(Math.Round(TimeKeeper.LastBeat.BeatPos));
+        snapBeat.Loop = TimeKeeper.LastBeat.Loop;
+
+        float pos = (float)TimeKeeper.GetTimeOfBeat(snapBeat);
         if (pos > 0 && pos < Audio.Stream.GetLength())
         {
             Audio.Seek(pos);
