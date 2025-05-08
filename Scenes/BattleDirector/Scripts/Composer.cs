@@ -171,7 +171,7 @@ public partial class Composer : Node2D
 
         Audio.Stop();
         SongData curSong = Config;
-        Audio.SetStream(GD.Load<AudioStream>(SongPath));
+        Audio.SetStream(AudioStreamOggVorbis.LoadFromFile(SongPath));
         if (curSong.SongLength <= 0)
         {
             curSong.SongLength = Audio.Stream.GetLength();

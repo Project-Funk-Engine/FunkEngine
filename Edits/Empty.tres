@@ -1,0 +1,11 @@
+[gd_resource type="Resource" load_steps=3 format=3 uid="uid://c6s01un47ko88"]
+
+[ext_resource type="Script" uid="uid://dulvm8bb6vths" path="res://Classes/MidiMaestro/NoteInfo.cs" id="1_jau2o"]
+[ext_resource type="Script" uid="uid://c5uwhvgga62i2" path="res://Classes/MidiMaestro/NoteChart.cs" id="2_idl27"]
+
+[resource]
+script = ExtResource("2_idl27")
+UpLaneData = Array[ExtResource("1_jau2o")]([])
+DownLaneData = Array[ExtResource("1_jau2o")]([])
+LeftLaneData = Array[ExtResource("1_jau2o")]([])
+RightLaneData = Array[ExtResource("1_jau2o")]([])
