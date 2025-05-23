@@ -1,5 +1,6 @@
 using System;
 using FunkEngine;
+using FunkEngine.Classes.MidiMaestro;
 using Godot;
 
 /**<summary>BattleDirector: Higher priority director to manage battle effects. Can directly access managers, which should signal up to Director WIP</summary>
@@ -11,7 +12,7 @@ public partial class Composer : Node2D
     public static readonly string LoadPath = "res://Scenes/BattleDirector/BattleScene.tscn";
 
     [Export]
-    public bool forInternalUse = true;
+    public bool ForInternalUse;
 
     [Export]
     private Conductor CD;
@@ -101,6 +102,8 @@ public partial class Composer : Node2D
         _fileDialog.FileMode = FileDialog.FileModeEnum.OpenFile;
         _fileDialog.Access = FileDialog.AccessEnum.Filesystem;
         _fileDialog.UseNativeDialog = true;
+        if (!ForInternalUse)
+            _fileDialog.CurrentDir = "user://";
         _fileDialog.Filters = ["*.ogg"];
         AddChild(_fileDialog);
 
@@ -140,7 +143,7 @@ public partial class Composer : Node2D
 
     public override void _Process(double delta)
     {
-        _saveButton.Disabled = (CD.MM == null || CD.MM.CurrentChart == null);
+        _saveButton.Disabled = (CD.MM?.CurrentChart == null);
 
         TimeKeeper.CurrentTime = Audio.GetPlaybackPosition();
         Beat realBeat = TimeKeeper.GetBeatFromTime(Audio.GetPlaybackPosition());
@@ -267,14 +270,45 @@ public partial class Composer : Node2D
         };
     }
 
+    public static string UserSaveFolder = "Exports";
+
     private void SaveChart()
     {
+        if (ForInternalUse)
+        {
+            CD.MM.CurrentChart.SaveChart(
+                ChartDir + SaveChartPath,
+                SongPath.GetFile(),
+                (int)_bpmSelector.Value,
+                (int)_loopsSelector.Value
+            );
+            return;
+        }
+
+        if (!DirAccess.DirExistsAbsolute("user://" + UserSaveFolder))
+            DirAccess.Open("user://").MakeDirRecursive(UserSaveFolder);
         CD.MM.CurrentChart.SaveChart(
-            ChartDir + SaveChartPath,
+            "user://" + UserSaveFolder + "/" + SaveChartPath,
             SongPath.GetFile(),
             (int)_bpmSelector.Value,
             (int)_loopsSelector.Value
         );
+
+        FileAccess file = FileAccess.Open(
+            "user://" + UserSaveFolder + "/" + _saveName.Text + ".sontem",
+            FileAccess.ModeFlags.Write
+        );
+
+        string songAsJson = SongTemplate.ToJSONString(
+            new SongTemplate(
+                _saveName.Text,
+                ["res://Scenes/Puppets/Enemies/Keythulu/Keythulu.tscn"]
+            ),
+            SaveChartPath
+        );
+
+        file.StoreLine(songAsJson);
+        file.Close();
     }
 
     private void SaveTextChanged()
@@ -288,6 +322,8 @@ public partial class Composer : Node2D
         _reinitButton.Disabled = !ValidateLoadChart();
     }
 
+    public static string ChartBaseDir = ChartDir;
+
     /// <summary>
     /// Validate that the load path points to a valid chart resource.
     /// </summary>
@@ -296,12 +332,19 @@ public partial class Composer : Node2D
     {
         LoadChartPath = _loadName.Text + ".tres";
 
-        if (!FileAccess.FileExists(ChartDir + LoadChartPath))
-            return false;
+        ChartBaseDir = "user://" + UserSaveFolder + "/";
+
+        if (!FileAccess.FileExists("user://" + UserSaveFolder + "/" + LoadChartPath))
+        {
+            if (!FileAccess.FileExists(ChartDir + LoadChartPath))
+                return false;
+            ChartBaseDir = ChartDir;
+        }
+
         try //Can't be parsed.
         {
             NoteChart chart = ResourceLoader.Load<NoteChart>(
-                ChartDir + LoadChartPath,
+                ChartBaseDir + LoadChartPath,
                 null,
                 ResourceLoader.CacheMode.Ignore
             );

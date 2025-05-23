@@ -28,7 +28,7 @@ public partial class Conductor : Node
     {
         _noteData = new List<ArrowData>();
 
-        MM = new MidiMaestro(Composer.ChartDir + Composer.LoadChartPath);
+        MM = new MidiMaestro(Composer.ChartBaseDir + Composer.LoadChartPath);
 
         CM.Initialize(curSong);
 

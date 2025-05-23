@@ -11,6 +11,7 @@
 [node name="Composer" type="Node2D" node_paths=PackedStringArray("CD", "CM", "Audio", "_reinitButton", "_startButton", "_pauseButton", "_beatLabel", "_resumeButton", "_saveButton", "_loadName", "_saveName", "_holdLength", "_beatOffset", "_bpmSelector", "_loopsSelector", "_selectSongButton", "_selectSongLabel", "_forwardButton", "_rewindButton", "_jumpSelector", "_snapButton")]
 process_mode = 1
 script = ExtResource("1_jmdo1")
+ForInternalUse = true
 CD = NodePath("Conductor")
 CM = NodePath("SubViewport")
 Audio = NodePath("AudioStreamPlayer")
