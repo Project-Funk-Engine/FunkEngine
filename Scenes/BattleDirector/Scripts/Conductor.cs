@@ -30,7 +30,7 @@ public partial class Conductor : Node
 
         MM = new MidiMaestro(Composer.ChartBaseDir + Composer.LoadChartPath);
 
-        CM.Initialize(curSong);
+        CM.Initialize(curSong, MM.CurrentChart.SongSpeed);
 
         //Approximately the first note offscreen
         _beatSpawnOffset = Math.Ceiling(

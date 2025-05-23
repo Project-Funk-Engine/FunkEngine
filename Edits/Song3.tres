@@ -275,6 +275,10 @@ Length = 0.0
 
 [resource]
 script = ExtResource("2_xg88o")
+Bpm = 0
+NumLoops = 0
+SongSpeed = -1.0
+SongMapLocation = ""
 UpLaneData = [SubResource("Resource_wc7xs"), SubResource("Resource_k53ay"), SubResource("Resource_blbm2"), SubResource("Resource_3gjtl"), SubResource("Resource_mi50b"), SubResource("Resource_vdnsu"), SubResource("Resource_1xwp0"), SubResource("Resource_ybe5s"), SubResource("Resource_wd1lo"), SubResource("Resource_eotyn"), SubResource("Resource_3wyug"), SubResource("Resource_77c6u"), SubResource("Resource_811fa"), SubResource("Resource_6kji1"), SubResource("Resource_tdwrl")]
 DownLaneData = [SubResource("Resource_7kndb"), SubResource("Resource_xg88o"), SubResource("Resource_g8421"), SubResource("Resource_11qbm"), SubResource("Resource_hrrtc"), SubResource("Resource_rmog3"), SubResource("Resource_tnqsp"), SubResource("Resource_6n6ig"), SubResource("Resource_ci2g3"), SubResource("Resource_2c17a"), SubResource("Resource_gugsw"), SubResource("Resource_j4ixp"), SubResource("Resource_i2oko"), SubResource("Resource_6oq4l"), SubResource("Resource_s8y6q"), SubResource("Resource_pdfmt")]
 LeftLaneData = [SubResource("Resource_lkwp6"), SubResource("Resource_sd1fo"), SubResource("Resource_wkvcn"), SubResource("Resource_woki6"), SubResource("Resource_gm3ao"), SubResource("Resource_8sl4t"), SubResource("Resource_j8ilf"), SubResource("Resource_14d3f"), SubResource("Resource_1qfq5"), SubResource("Resource_v0l44"), SubResource("Resource_ywfrj")]

@@ -33,7 +33,7 @@ public partial class ChartManager : SubViewportContainer
         IH.Connect(nameof(InputHandler.NoteReleased), new Callable(this, nameof(OnNoteReleased)));
     }
 
-    public void Initialize(SongData songData)
+    public void Initialize(SongData songData, float songSpeed)
     {
         foreach (Node node in _arrowGroup.GetChildren())
         {
@@ -57,14 +57,16 @@ public partial class ChartManager : SubViewportContainer
         TimeKeeper.LoopsPerSong = songData.NumLoops;
         TimeKeeper.SongLength = songData.SongLength;
 
-        double _loopLen = songData.SongLength / songData.NumLoops;
+        double loopLen = songData.SongLength / songData.NumLoops;
 
+        if (songSpeed > 0)
+            _chartLength = songSpeed * loopLen;
         //99% sure chart length can never be less than (chart viewport width) * 2,
         //otherwise there isn't room for things to loop from off and on screen
         _chartLength = Math.Max(
-            _loopLen * Math.Ceiling(Size.X * 2 / _loopLen),
+            loopLen * Math.Ceiling(Size.X * 2 / loopLen),
             //Also minimize rounding point imprecision, improvement is qualitative
-            _loopLen * Math.Floor(_chartLength / _loopLen)
+            loopLen * Math.Floor(_chartLength / loopLen)
         );
 
         TimeKeeper.ChartWidth = _chartLength;
