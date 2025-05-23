@@ -11,6 +11,9 @@ public partial class Composer : Node2D
     public static readonly string LoadPath = "res://Scenes/BattleDirector/BattleScene.tscn";
 
     [Export]
+    public bool forInternalUse = true;
+
+    [Export]
     private Conductor CD;
 
     [Export]
@@ -98,7 +101,7 @@ public partial class Composer : Node2D
         _fileDialog.FileMode = FileDialog.FileModeEnum.OpenFile;
         _fileDialog.Access = FileDialog.AccessEnum.Filesystem;
         _fileDialog.UseNativeDialog = true;
-        _fileDialog.Filters = ["*.ogg", "*.wav"];
+        _fileDialog.Filters = ["*.ogg"];
         AddChild(_fileDialog);
 
         _fileDialog.FileSelected += (filePath) =>
@@ -266,7 +269,12 @@ public partial class Composer : Node2D
 
     private void SaveChart()
     {
-        CD.MM.CurrentChart.SaveChart(ChartDir + SaveChartPath);
+        CD.MM.CurrentChart.SaveChart(
+            ChartDir + SaveChartPath,
+            SongPath.GetFile(),
+            (int)_bpmSelector.Value,
+            (int)_loopsSelector.Value
+        );
     }
 
     private void SaveTextChanged()

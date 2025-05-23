@@ -9,27 +9,39 @@ public partial class NoteChart : Resource
     const float Precision = 0.0001f;
 
     [Export]
-    Array<NoteInfo> UpLaneData = new Array<NoteInfo>();
+    public int Bpm { get; set; }
 
     [Export]
-    Array<NoteInfo> DownLaneData = new Array<NoteInfo>();
+    public int NumLoops { get; set; }
 
     [Export]
-    Array<NoteInfo> LeftLaneData = new Array<NoteInfo>();
+    public string SongMapLocation { get; set; } = "";
 
     [Export]
-    Array<NoteInfo> RightLaneData = new Array<NoteInfo>();
+    Array<NoteInfo> UpLaneData = [];
+
+    [Export]
+    Array<NoteInfo> DownLaneData = [];
+
+    [Export]
+    Array<NoteInfo> LeftLaneData = [];
+
+    [Export]
+    Array<NoteInfo> RightLaneData = [];
 
     public void Reset()
     {
-        UpLaneData = new Array<NoteInfo>();
-        DownLaneData = new Array<NoteInfo>();
-        LeftLaneData = new Array<NoteInfo>();
-        RightLaneData = new Array<NoteInfo>();
+        UpLaneData = [];
+        DownLaneData = [];
+        LeftLaneData = [];
+        RightLaneData = [];
     }
 
-    public void SaveChart(string path)
+    public void SaveChart(string path, string songName, int bpm, int numLoops)
     {
+        SongMapLocation = songName;
+        NumLoops = numLoops;
+        Bpm = bpm;
         ResourceSaver.Save(this, path);
     }
 
