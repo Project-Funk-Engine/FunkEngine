@@ -79,6 +79,9 @@ public partial class Composer : Node2D
     [Export]
     private Button _snapButton;
 
+    [Export]
+    private Button _mapperButton;
+
     public static string SongPath = String.Empty;
     public const string ChartDir = "Edits/";
     public static string SaveChartPath;
