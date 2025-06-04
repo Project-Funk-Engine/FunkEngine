@@ -1,5 +1,6 @@
 using System;
 using FunkEngine;
+using FunkEngine.Classes.BeatDetector;
 using FunkEngine.Classes.MidiMaestro;
 using Godot;
 
@@ -107,7 +108,7 @@ public partial class Composer : Node2D
         _fileDialog.UseNativeDialog = true;
         if (!ForInternalUse)
             _fileDialog.CurrentDir = "user://";
-        _fileDialog.Filters = ["*.ogg"];
+        _fileDialog.Filters = ["*.ogg", "*.wav"]; //TODO: wav doesnt work for game, ogg doesnt work for mapper. What to do?
         AddChild(_fileDialog);
 
         _fileDialog.FileSelected += (filePath) =>
@@ -142,6 +143,7 @@ public partial class Composer : Node2D
         _forwardButton.Pressed += JumpForward;
         _rewindButton.Pressed += JumpBackwards;
         _snapButton.Pressed += SnapToBeat;
+        _mapperButton.Pressed += AutoMap;
     }
 
     public override void _Process(double delta)
@@ -410,6 +412,41 @@ public partial class Composer : Node2D
             {
                 Audio.SetStreamPaused(true);
             }
+        }
+    }
+
+    #endregion
+
+    #region  Auto Mapping
+
+    private void AutoMap()
+    {
+        AudioFileAnalyzer analyzer = new AudioFileAnalyzer();
+        analyzer.LoadAudioFromFile(SongPath);
+
+        if (analyzer.PCMStream == null)
+        {
+            GD.PushError("Failed to load audio stream from file: " + SongPath);
+            return;
+        }
+
+        try
+        {
+            analyzer.DetectOnsets();
+            analyzer.NormalizeOnsets(0); // Normalization type 0 for now, can be changed later
+            float[] onsets = analyzer.getOnsets();
+            if (onsets.Length == 0)
+            {
+                GD.PushError("No onsets detected in the audio file.");
+                return;
+            }
+
+            //log the detected onsets
+            GD.Print("Detected Onsets: " + string.Join(", ", onsets));
+        }
+        catch (Exception e)
+        {
+            GD.PushError("Unable to load onsets for file: " + SongPath + "\n Error: " + e);
         }
     }
 
