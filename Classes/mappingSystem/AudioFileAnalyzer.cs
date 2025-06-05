@@ -4,6 +4,7 @@ namespace FunkEngine.Classes.BeatDetector;
 
 using System;
 using Godot;
+using NAudio.Vorbis;
 using NAudio.Wave;
 
 /// <summary>
@@ -18,7 +19,7 @@ public partial class AudioFileAnalyzer : Resource
 
     Fft _fft;
 
-    public AudioFileReader PCMStream { get; set; } //The audio steam from our MP3/WAV file
+    public VorbisWaveReader PCMStream { get; set; } //The audio stream from our OGG file
 
     private OnsetDetector _onsetDetector;
 
@@ -31,20 +32,19 @@ public partial class AudioFileAnalyzer : Resource
     }
 
     /// <summary>
-    /// This project supports both WAV and MP3 files. We might be able to do more? IDK It's limited to that for now.
+    /// This project supports OGG files only.
     /// </summary>
-    /// <param name="filePath">The path to your audio file</param>
+    /// <param name="filePath">The path to your OGG audio file</param>
     public void LoadAudioFromFile(string filePath)
     {
-        //TODO: Only wav supported on platforms other than windows - need to find fix
-        if (!File.Exists(filePath) || (!filePath.EndsWith(".mp3") && !filePath.EndsWith(".wav")))
+        if (!File.Exists(filePath) || !filePath.EndsWith(".ogg"))
         {
             throw new FileNotFoundException(
-                "File not found or unsupported file type. Please provide a valid WAV or MP3 file."
+                "File not found or unsupported file type. Please provide a valid OGG file."
             );
         }
 
-        PCMStream = new AudioFileReader(filePath);
+        PCMStream = new VorbisWaveReader(filePath);
 
         if (PCMStream == null)
         {

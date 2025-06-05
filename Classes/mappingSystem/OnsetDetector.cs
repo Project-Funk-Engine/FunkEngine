@@ -4,12 +4,12 @@ namespace FunkEngine.Classes.BeatDetector;
 
 using System;
 using System.Collections.Generic;
-using NAudio.Wave;
+using NAudio.Vorbis;
 
 public partial class OnsetDetector : Resource
 {
     private Fft _fft = new Fft();
-    private AudioFileReader _pcm;
+    private VorbisWaveReader _pcm;
     private int _sampleSize;
 
     public float[] Onsets { get; private set; }
@@ -24,7 +24,7 @@ public partial class OnsetDetector : Resource
 
     private List<float> _fluxes;
 
-    public OnsetDetector(AudioFileReader pcm, int sampleWindow)
+    public OnsetDetector(VorbisWaveReader pcm, int sampleWindow)
     {
         _pcm = pcm;
         _sampleSize = sampleWindow;

@@ -108,7 +108,7 @@ public partial class Composer : Node2D
         _fileDialog.UseNativeDialog = true;
         if (!ForInternalUse)
             _fileDialog.CurrentDir = "user://";
-        _fileDialog.Filters = ["*.ogg", "*.wav"]; //TODO: wav doesnt work for game, ogg doesnt work for mapper. What to do?
+        _fileDialog.Filters = ["*.ogg"];
         AddChild(_fileDialog);
 
         _fileDialog.FileSelected += (filePath) =>
