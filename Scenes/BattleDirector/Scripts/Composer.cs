@@ -83,6 +83,9 @@ public partial class Composer : Node2D
     [Export]
     private Button _mapperButton;
 
+    [Export]
+    private Slider _sensitivitySlider;
+
     public static string SongPath = String.Empty;
     public const string ChartDir = "Edits/";
     public static string SaveChartPath;
@@ -451,8 +454,9 @@ public partial class Composer : Node2D
 
             for (int i = 0; i < onsets.Length; i++)
             {
-                if (onsets[i] > .1) //TODO Sensitivity
+                if (onsets[i] > _sensitivitySlider.Value)
                 {
+                    GD.Print("sensitivity:  " + _sensitivitySlider.Value);
                     float time = i * timePerSample;
 
                     Beat noteBeat = TimeKeeper.GetBeatFromTime(time);

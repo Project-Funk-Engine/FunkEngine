@@ -59,8 +59,8 @@ public partial class ChartManager : SubViewportContainer
 
         double loopLen = songData.SongLength / songData.NumLoops;
 
-        if (songSpeed > 0)
-            _chartLength = songSpeed * loopLen;
+        _chartLength = 200 * loopLen;
+
         //99% sure chart length can never be less than (chart viewport width) * 2,
         //otherwise there isn't room for things to loop from off and on screen
         _chartLength = Math.Max(
