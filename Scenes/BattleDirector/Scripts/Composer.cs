@@ -443,6 +443,30 @@ public partial class Composer : Node2D
 
             //log the detected onsets
             GD.Print("Detected Onsets: " + string.Join(", ", onsets));
+
+            float timePerSample = analyzer.GetTimePerSample();
+
+            Random random = new Random();
+            int notesAdded = 0;
+
+            for (int i = 0; i < onsets.Length; i++)
+            {
+                if (onsets[i] > .1) //TODO Sensitivity
+                {
+                    float time = i * timePerSample;
+
+                    Beat noteBeat = TimeKeeper.GetBeatFromTime(time);
+
+                    Array arrowTypes = Enum.GetValues(typeof(ArrowType));
+                    ArrowType randomType = (ArrowType)
+                        arrowTypes.GetValue(random.Next(arrowTypes.Length));
+
+                    PlayerAddNote(randomType, noteBeat);
+                    notesAdded++;
+                }
+            }
+
+            GD.Print($"Auto-mapped {notesAdded} notes based on audio analysis");
         }
         catch (Exception e)
         {
